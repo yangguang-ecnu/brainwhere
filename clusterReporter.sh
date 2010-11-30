@@ -163,7 +163,7 @@ bwDir="/Users/stowler/brainwhere"
 
 # EDITME: change per system
 #standardParent=/Users/stowler/atlases  # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
-standardParent=${bwDir}/localization  # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
+standardParent=${bwDir}/utilitiesAndData/localization  # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
 standardTemplate=MNI152_T1_1mm         # standardTemplate is a label used throughout this script
 standardTemplateFile=${FSLDIR}/data/standard/${standardTemplate}_brain_mask.nii.gz
 
@@ -282,13 +282,13 @@ echo "calling augmentAndSplitAtlas.sh to augment and split the canonical atlas (
 # augment and split the canonical atlas:
 # EDITME: edit to change atlas used
 #sh stowler-augmentAndSplitAtlas.sh ${standardParent}/1mmCrosson3roi.nii.gz ${tempDir}/atlasMask 
-sh ${bwDir}/utilities/augmentAndSplitAtlas.sh ${standardParent}/1mmCrosson3roiOnly.nii.gz ${tempDir}/atlasMask 
+sh ${bwDir}/utilitiesAndData/augmentAndSplitAtlas.sh ${standardParent}/1mmCrosson3roiOnly.nii.gz ${tempDir}/atlasMask 
 #sh stowler-augmentAndSplitAtlas.sh ${standardParent}/1mmHarvardOxfordCortical.nii.gz ${tempDir}/atlasMask 
 
 echo ""
 echo "calling augmentAndSplitAtlas.sh to augment and split the user-specified cluster mask (${clusterMask})"
 # augment and split the cluster mask:
-sh ${bwDir}/utilities/augmentAndSplitAtlas.sh ${clusterMask} ${tempDir}/clusterMask
+sh ${bwDir}/utilitiesAndData/augmentAndSplitAtlas.sh ${clusterMask} ${tempDir}/clusterMask
 
 
 # loop through main program loop twice: first to create per-atlasMask-region rows and per-clusterMask-region subrows, and then the other way around
@@ -430,7 +430,7 @@ while [ $mainLoopCounter -lt 2 ]; do
      done
      # EDITME: path to script called below may need to change per machine. Also the third argument to the script is the character used as a blank-filler (should match the blank filler a few lines down from here)
      # TBD: right now there is a cheat in the called script to put in two extra dashes (for peakValue and peakXYZ)
-     sh ${bwDir}/utilities/combineUnequalTextFilesIntoTwoColumns.sh ${tempDir}/intersectionsOf${rowRegionName}_LH.txt ${tempDir}/intersectionsOf${rowRegionName}_RH.txt - >> ${tempDir}/intersections_twoHems_noBlanks_${rowRegionName}.txt
+     sh ${bwDir}/utilitiesAndData/combineUnequalTextFilesIntoTwoColumns.sh ${tempDir}/intersectionsOf${rowRegionName}_LH.txt ${tempDir}/intersectionsOf${rowRegionName}_RH.txt - >> ${tempDir}/intersections_twoHems_noBlanks_${rowRegionName}.txt
      # the two dashes after LH and RH colums below are to open space for the peakValue and peakXYZ variables that appear in subrows below
      rowRegionLocalizationString="${rowRegionIntensity} ${rowRegionLabel} ${rowRegion_subrowMask_tot_BH_mm3} ${rowRegion_subrowMask_outsideBrain_BH_pct} ${rowRegion_subrowMask_inBrain_LH_mm3} ${rowRegion_subrowMask_inBrain_RH_mm3} ${rowRegionLateralityIndex} LH_%composition_per_${subrowMaskName}: - - RH_%composition_per_${subrowMaskName}: - - " 
      echo "${rowRegionLocalizationString}" >> ${tempDir}/rowRegionLocalizationStrings_${rowMask}.txt
