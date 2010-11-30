@@ -408,7 +408,7 @@ while [ $mainLoopCounter -lt 2 ]; do
 			-expr 'a*b' \
 			-prefix ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz
 			ls ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.*
-			subrowRegion_peakValue=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -V | awk '{print $1}'`
+			subrowRegion_peakValue=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -R | awk '{print $2}'`
 			# TBD: fix this hacked double-sed:
 			subrowRegion_peakXYZ=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -x | sed 's/\ /\,/1' | sed 's/\ /\,/1' ` 
                         echo "${subrowRegion_rowRegion_pct}%==${subrowRegionLabel} ${subrowRegion_peakValue} ${subrowRegion_peakXYZ}" >> ${tempDir}/intersectionsOf${rowRegionName}_${hem}.txt
