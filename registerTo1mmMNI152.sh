@@ -62,7 +62,7 @@ scriptUser=`whoami`			         # ...used in file and dir names
 startDate=`date +%Y%m%d` 		      # ...used in file and dir names
 startDateTime=`date +%Y%m%d%H%M%S`	# ...used in file and dir names
 #cdMountPoint
-bwDir="/Users/stowler/brainwhere"
+bwDir="/data/birc/RESEARCH/brainwhere"
 source ${bwDir}/utilities/brainwhereCommonFunctions.sh
 
 # ------------------------- FINISHED: definitions and constants ------------------------- #

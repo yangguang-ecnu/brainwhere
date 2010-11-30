@@ -1,39 +1,40 @@
 #!/bin/sh
 #
-# LOCATION: 	<location including filename>
-# CALL AS:	<usage note or "see invocation section in program body">
+# LOCATION: 	$bwDir
+# CALL AS:	$bwDir/clusterReporter.sh myMNI1mmRegisteredClusterMask.nii.gz myMNI1mmRegisteredStatsVolume.nii.gz'[n]' (where n is volume for which you want to know peak intensities)
 #
 # !!!! SEE LINES CONTAINING "EDITME" FOR PLACES TO MAKE CHANGES (per computer, per study, parameter tweaks, etc.)
 #
-# CREATED:	<date> by <whom>
-# LAST UPDATED:	<date> by <whom>
+# CREATED:	2010     by stowler@gmail.com http://brainwhere.googlecode.com
+# LAST UPDATED:	20101130 by stowler@gmail.com
 #
 # DESCRIPTION:
-# stowler-clusterReport3.sh worked: gave atlasMask rows and clusterMask subrows
-# stowler-clusterReport4.sh adds a second seciton of output: clusterMask rows with atlasMask subrows (via larger outer loop and addition of rowMask and subrowMask nomenclature
+# Localizes the voxels endorsed in the user-provided cluster mask (first
+# command-line argument), and provides peak intensity and corresponding
+# coordiantes from user-specified volume (second command-line argument)
 # 
 # STYSTEM REQUIREMENTS:
-#  - awk must be installed for fxnCalc
-#  - seq must be installed
-#  - column must be installed
+#  - system utilities: awk, seq, and column
 #  - each apriori atlas against which a clusterMask might be compared must have a number of files in ${standardParent}:
-#    (e.g. standardParent=/Users/stowler/atlases, or standardParent=/data/birc/RESEARCH/atlases)
+#    (e.g. standardParent=$bwDir/utilitiesAndData/localization/)
 #        - a multi-intensity atlas mask called ${atlasName}.nii.gz (e.g. 1mmCrosson3roi.nii.gz)
 #        - a list of labels in a file called labels_${atlasName}.txt
 #        - a blockMasks directory containing block masks aliged to atlas' standard space (e.g. MNI152_T1_1mm_blockMask_BH.nii.gz MNI152_T1_1mm_blockMask_LH.nii.gz MNI152_T1_1mm_blockMask_RH.nii.gz)
 #
 # INPUT FILES AND PERMISSIONS:
-# - clusterMask specified as argument in script call is:
-#     - coregistered to match the FSL standard brains (radiological RAI? RPI?)
-#     - filled with integer values betwen 1 and 240 inclusive
+# - first user-supplied argument is a 3D cluster mask or a lesion mask that has
+#   been registered into MNI 1mm space, and is filled only with integer values 1
+#   to 240 inclusive, with 0 reserved for background voxels.
+# - second user-supplied argument is a 1mmMNI-registered 3D volume containing
+#   some value for which the user would like the peak (and its location)
+#   reported. This could be a tstat, r-sq, AUC, or any other intensity of
+#   interest. 
 #
 # OTHER ASSUMPTIONS:
 #
 # TBD:
 # - provide choice of atlases
-# - peak Rsq for entire cluster and peak Rsq for cluster-atlasRegion intersection
-# - coordinate of peak Rsq
-#     - coordinate of region CoG instead would allow for coordinate even when user doesn't specify a buck file
+# - allow for user to not supply an intensity file, instead reporting COG when they don't
 # - average HDR w/ variance with each TR (requires access to resp file)
 #     - maybe a graph with average at each TR and a measure of variance?
 # 
@@ -44,65 +45,15 @@
 #
 #                    inAtlas	                        inBrainButNotAtlas	                  outsideOfStandardBrain
 #                 -------------------------------------------------------------------------------------------------------------
-# bilateral       | (specificROI=valueX)              inBrianNotAtlas=254                    outsideBrain=255
-# contralateral   | inAtlasContra=249	               inBrainContraNotAtlas=252	            outsideBrainContra=253
-# ipsilateral     | (specificROI=valueX)	            inBrainIpsiNotAtlas=250	               outsideBrainIpsi=251
+# bilateral       | (specificROI=valueX)              inBrianNotAtlas=254                         outsideBrain=255
+# contralateral   | inAtlasContra=249	              inBrainContraNotAtlas=252	                  outsideBrainContra=253
+# ipsilateral     | (specificROI=valueX)	      inBrainIpsiNotAtlas=250	                  outsideBrainIpsi=251
 #
 #
 
 
 
 # ------------------------- START: fxn definitions ------------------------- #
-
-# fxnCalc is also something I include in my .bash_profile:
-# calc(){ awk "BEGIN{ print $* }" ;}
-# use quotes if parens are included in your function call:
-# calc "((3+(2^3)) * 34^2 / 9)-75.89"
-fxnCalc()
-{
-   awk "BEGIN{ print $* }" ;
-}
-
-fxnSetTempDir(){
-   # ${tempParent}: parent dir of ${tempDir}(s) where temp files will be stored
-   # e.g. tempParent="${blindParent}/tempProcessing"
-   # (If tempParent or tempDir needs to include blind, remember to assign value to $blind before calling!)
-   # EDITME: $tempParent is something that might change on a per-system, per-script, or per-experiment basis:
-   hostname=`hostname -s`
-   kernel=`uname -s`
-   if [ $hostname = "stowler-mbp" ]; then
-      tempParent="/Users/stowler/temp"
-   elif [ $kernel = "Linux" ] && [ -d /tmp ] && [ -w /tmp ]; then
-      tempParent="/tmp"
-   elif [ $kernel = "Darwin" ] && [ -d /tmp ] && [ -w /tmp ]; then
-      tempParent="/tmp"
-   else
-      echo "Cannot find a suitable temp directory. Edit script's tempParent variable. Exiting."
-      exit 1
-   fi
-   # e.g. tempDir="${tempParent}/${startDateTime}-from_${scriptName}.${scriptPID}"
-   tempDir="${tempParent}/${startDateTime}-from_${scriptName}.${scriptPID}"
-   mkdir $tempDir
-   if [ $? -ne 0 ] ; then
-      echo ""
-      echo "ERROR: unable to create temporary directory $tempDir"
-      echo "Exiting."
-      echo ""
-      exit 1
-   fi
-}
-
-
-# deprecated: TBD: rewrite using fxnCalc
-#fxnPercentDiff ()
-#{
-#        sum=`/home/leonardlab/scripts/ucr/scriptbc -p 6 $1 + $2`
-#        diff=`/home/leonardlab/scripts/ucr/scriptbc -p 6 $1 - $2`
-#        avg=`/home/leonardlab/scripts/ucr/scriptbc -p 6 $sum / 2`
-#        percentDiff=`/home/leonardlab/scripts/ucr/scriptbc -p 6 $diff / $avg`
-#        percentDiff=`/home/leonardlab/scripts/ucr/scriptbc -p 2 $percentDiff \* 100`
-#        echo "${percentDiff}"
-#}
 
 
 
@@ -159,7 +110,8 @@ startDate=`date +%Y%m%d` 		# ...used in file and dir names
 startDateTime=`date +%Y%m%d%H%M%S`	# ...used in file and dir names
 #cdMountPoint
 startDir="`pwd`"
-bwDir="/Users/stowler/brainwhere"
+bwDir=/data/birc/RESEARCH/brainwhere
+source ${bwDir}/utilitiesAndData/brainwhereCommonFunctions.sh
 
 # EDITME: change per system
 #standardParent=/Users/stowler/atlases  # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
@@ -263,6 +215,7 @@ echo "#################################################################"
 #  autoRange: off (set range to 1)
 #  Pos? checked
 #  3 color panes (divisions set at .20 and .24
+
 
 echo ""
 echo ""

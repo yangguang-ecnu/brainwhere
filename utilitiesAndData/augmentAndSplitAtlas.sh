@@ -178,7 +178,7 @@ startDir="`pwd`"
 # export FSLOUTPUTTYPE=NIFTI_GZ
 
 # EDITME: change per system
-bwDir="/Users/stowler/brainwhere"
+bwDir="/data/birc/RESEARCH/brainwhere"
 standardParent=${bwDir}/utilitiesAndData/localization  # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
 #standardParent=/Users/stowler/atlases  # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
 standardTemplate=MNI152_T1_1mm         # standardTemplate is a label used throughout this script
