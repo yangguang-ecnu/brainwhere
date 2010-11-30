@@ -32,8 +32,9 @@ fxnSetTempDir() {
    kernel=`uname -s`
    if [ $hostname = "stowler-mbp" ]; then
       tempParent="/Users/stowler/temp"
-   elif [ $kernel = "Linux" ] && [ -d /tmp ] && [ -w /tmp ]; then
-      tempParent="/tmp"
+   elif [ $kernel = "Linux" ]; then
+      tempParent="${HOME}/temp"
+      mkdir ${tempParent}                      #because not everyone will have a ~/temp to begin
    elif [ $kernel = "Darwin" ] && [ -d /tmp ] && [ -w /tmp ]; then
       tempParent="/tmp"
    else
