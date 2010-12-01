@@ -30,7 +30,7 @@
 fxnPrintUsage() {
    #EDITME: customize for each script:
    echo >&2 "$0 - a script to register unstriped T1, lesion mask, and epi to 1mmMNI152 space"
-   echo >&2 "Usage: stowler-registerTo1mmMNI152 \\"
+   echo >&2 "Usage: registerTo1mmMNI152.sh \\"
    echo >&2 "  -s <subjectID>        \\"
    echo >&2 "  -t <t1.nii>           \\"
    echo >&2 "  -o <FullPathToOutdir> \\"
@@ -62,7 +62,7 @@ startDate=`date +%Y%m%d` 		      # ...used in file and dir names
 startDateTime=`date +%Y%m%d%H%M%S`	# ...used in file and dir names
 #cdMountPoint
 bwDir="/data/birc/RESEARCH/brainwhere"
-source ${bwDir}/utilities/brainwhereCommonFunctions.sh
+source ${bwDir}/utilitiesAndData/brainwhereCommonFunctions.sh
 
 # ------------------------- FINISHED: definitions and constants ------------------------- #
 
