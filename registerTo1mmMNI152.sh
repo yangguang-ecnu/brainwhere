@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-# LOCATION: 	   <location including filename>
-# USAGE:          (see fxnPrintUsage() function below)
+# LOCATION: 	   $bwDir/registerTo1mmMNI152.sh
+# USAGE:           (see fxnPrintUsage() function below)
 #
-# CREATED:	   201008?? by stowler@gmail.com
-# LAST UPDATED:	   20101005 by stowler@gmail.com
+# CREATED:	   201008?? by stowler@gmail.com http://brainwhere.googlecode.com
+# LAST UPDATED:	   20101201 by stowler@gmail.com
 #
 # DESCRIPTION:
 # Registers T1 to the 1mm MNI152 template, along with optional lesion mask deweighting and application of transform to EPI
@@ -13,7 +13,6 @@
 #  - afni, fsl
 #  - getopt must be installed
 #  - awk must be installed for fxnCalc
-#  - ~stowler/scripts/stowler-checkImageBasics.sh
 #
 # INPUT FILES AND PERMISSIONS:
 # <list or describe>
@@ -144,14 +143,38 @@ fi
 
 if [ ! -z ${lesion} ]; then
 	fxnValidateImages ${lesion}
+	if [ $? -eq 1 ]; then 
+		echo ""
+		echo "ERROR: $lesion is not a valid image"
+		echo ""
+		fxnPrintUsage
+		echo ""
+		exit 1
+	fi
 fi
 
 if [ ! -z ${epi} ]; then
 	fxnValidateImages ${epi}
+	if [ $? -eq 1 ]; then 
+		echo ""
+		echo "ERROR: $epi is not a valid image"
+		echo ""
+		fxnPrintUsage
+		echo ""
+		exit 1
+	fi
 fi
 
 if [ ! -z ${buck} ]; then
 	fxnValidateImages ${buck}
+	if [ $? -eq 1 ]; then 
+		echo ""
+		echo "ERROR: $buck is not a valid image"
+		echo ""
+		fxnPrintUsage
+		echo ""
+		exit 1
+	fi
 fi
 
 # ------------------------- FINISHED: invocation ------------------------- #
@@ -189,8 +212,9 @@ echo ""
 
 # ================================================================= #
 # display input image metadata:
-echo "Images to nonlinear register into 1mmMNI152 (note: a lesion should match T1's geometry):"
-echo ""
+echo "Images to nonlinear register into 1mmMNI152"
+echo "-IMPORTANT: a lesion must match T1's geometry"
+echo "-IMPORTANT: images following EPI must match EPI geometry"
 sh ${bwDir}/displayImageGeometry.sh -n ${t1} >> ${tempDir}/inputUnformatted.txt
 for image in $t1 $lesion $epi $buck; do
 	if [ -s $image ]; then
@@ -206,19 +230,22 @@ read
 # copy images to $tempDir:
 echo ""
 echo "Copying input images to ensure consistent naming and avoid bad datatypes:"
-# TBD: maybe 3dresample to RPI here instead of imcp
-#imcp $t1 ${tempDir}/${blind}_t1
 3dresample \
-	-orient rpi \
-	-prefix ${tempDir}/${blind}_t1.nii.gz \
-	-inset $t1
+-orient rpi \
+-prefix ${tempDir}/${blind}_t1.nii.gz \
+-inset $t1
 ls -1 ${tempDir}/${blind}_t1*
+
 if [ -s "`echo ${lesion}`" ]; then
-	fslmaths ${lesion} ${tempDir}/${blind}_lesion -odt char
+	fslmaths ${lesion} ${tempDir}/${blind}_lesion_char.nii.gz -odt char
+	3dresample \
+	-orient rpi \
+	-prefix ${tempDir}/${blind}_lesion.nii.gz \
+	-inset ${tempDir}/${blind}_lesion_char.nii.gz
+	rm -f ${tempDir}/${blind}_lesion_char.nii.gz
 	ls -1 ${tempDir}/${blind}_lesion*
 fi
 if [ -s "`echo ${epi}`" ]; then
-	# imcp ${epi} ${tempDir}/${blind}_epi
 	3dresample \
         -orient rpi \
         -prefix ${tempDir}/${blind}_epi.nii.gz \
@@ -226,7 +253,10 @@ if [ -s "`echo ${epi}`" ]; then
 	ls -1 ${tempDir}/${blind}_epi*
 fi
 if [ -s "`echo ${buck}`" ]; then
-	imcp ${buck} ${tempDir}/${blind}_buck
+	3dresample \
+        -orient rpi \
+        -prefix ${tempDir}/${blind}_buck.nii.gz \
+        -inset ${buck}
 	ls -1 ${tempDir}/${blind}_buck*
 fi
 
@@ -381,6 +411,21 @@ if [ -s "`echo ${epi}`" ]; then
 	ls -l ${tempDir}/${blind}_epi_warped*
 fi
 
+if [ -s "`echo ${buck}`" ]; then
+	echo ""
+	echo ""
+	echo "applying nonlinear warp to buck file (about 30 minutes)..."
+	ls -l ${tempDir}/${blind}_buck*
+	#applywarp \
+	#     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
+	#     --in=${tempDir}/${blind}_epi \
+	#     --warp=${tempDir}/${blind}_nonlinear_transf \
+	#     --premat=${tempDir}/${blind}_funct2struct.mat \
+	#     --out=${tempDir}/${blind}_epi_warped
+	applywarp --ref=${FSLDIR}/data/standard/MNI152_T1_1mm --in=${tempDir}/${blind}_buck --warp=${tempDir}/${blind}_nonlinear_transf --premat=${tempDir}/${blind}_funct2struct.mat --out=${tempDir}/${blind}_buck_warped
+
+	ls -l ${tempDir}/${blind}_epi_warped*
+fi
 
 echo ""
 echo ""
