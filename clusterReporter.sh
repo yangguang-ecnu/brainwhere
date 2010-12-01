@@ -353,18 +353,20 @@ while [ $mainLoopCounter -lt 2 ]; do
                     if [ ${subrowRegion_rowRegion_mm3} -ne 0 ]; then 
                         rowRegion_mm3=`fslstats ${tempDir}/${rowMask}/intensityBin/${rowRegionName}_${hem} -V | awk '{print $1}'`
                         subrowRegion_rowRegion_pct=`awk "BEGIN{ print ${subrowRegion_rowRegion_mm3}/${rowRegion_mm3}*100 }" `
-			# DEBUG: subrowRegion_peakValue="PEAK"
-			# DEBUG: subrowRegion_peakXYZ="01,20,77"
+			# DEBUG: subrowRegion_maxInt="MAX"
+			# DEBUG: subrowRegion_maxIntXYZ="01,20,77"
 			3dcalc \
 			-a ${intensityVolume} \
 			-b ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}.nii.gz \
 			-expr 'a*b' \
 			-prefix ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz
 			ls ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.*
-			subrowRegion_peakValue=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -R | awk '{print $2}'`
+			subrowRegion_maxInt=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -R | awk '{print $2}'`
+			subrowRegion_minInt=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -R | awk '{print $1}'`
 			# TBD: fix this hacked double-sed:
-			subrowRegion_peakXYZ=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -x | sed 's/\ /\,/1' | sed 's/\ /\,/1' ` 
-                        echo "${subrowRegion_rowRegion_pct}%==${subrowRegionLabel} ${subrowRegion_peakValue} ${subrowRegion_peakXYZ}" >> ${tempDir}/intersectionsOf${rowRegionName}_${hem}.txt
+			subrowRegion_maxIntXYZ=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -x | sed 's/\ /\,/1' | sed 's/\ /\,/1' ` 
+			subrowRegion_minIntXYZ=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -X | sed 's/\ /\,/1' | sed 's/\ /\,/1' ` 
+                        echo "${subrowRegion_rowRegion_pct}%==${subrowRegionLabel} ${subrowRegion_minInt} ${subrowRegion_maxInt} ${subrowRegion_minIntXYZ} ${subrowRegion_maxIntXYZ}" >> ${tempDir}/intersectionsOf${rowRegionName}_${hem}.txt
                     fi
                   done # end of per-hem inner inner loop
         done < ${tempDir}/${subrowMask}/labels_${subrowMaskName}.txt  # done with per-subrow-region inner loop
@@ -377,15 +379,15 @@ while [ $mainLoopCounter -lt 2 ]; do
         if [ -s ${tempDir}/intersectionsOf${rowRegionName}_${hem}.txt ]; then
             sort -nr -o ${tempDir}/intersectionsOf${rowRegionName}_${hem}.txt ${tempDir}/intersectionsOf${rowRegionName}_${hem}.txt
         else # this else shouldn't happen if the row has all non-zero values (i.e. outside row areas have been asigned an arbitrary value per note at top of this script)
-	    #the two hyphens below are placeholders for peakValue and peakXYZ variables:
-            echo "(doesNotIntersect${hem}_of_${subrowMaskName}) - - " >> ${tempDir}/intersectionsOf${rowRegionName}_${hem}.txt
+	    #the four hyphens below are placeholders for minInt, maxInt, minIntXYZ, maxIntXYZ variables:
+            echo "(doesNotIntersect${hem}_of_${subrowMaskName}) - - - - " >> ${tempDir}/intersectionsOf${rowRegionName}_${hem}.txt
         fi
      done
      # EDITME: path to script called below may need to change per machine. Also the third argument to the script is the character used as a blank-filler (should match the blank filler a few lines down from here)
      # TBD: right now there is a cheat in the called script to put in two extra dashes (for peakValue and peakXYZ)
      sh ${bwDir}/utilitiesAndData/combineUnequalTextFilesIntoTwoColumns.sh ${tempDir}/intersectionsOf${rowRegionName}_LH.txt ${tempDir}/intersectionsOf${rowRegionName}_RH.txt - >> ${tempDir}/intersections_twoHems_noBlanks_${rowRegionName}.txt
-     # the two dashes after LH and RH colums below are to open space for the peakValue and peakXYZ variables that appear in subrows below
-     rowRegionLocalizationString="${rowRegionIntensity} ${rowRegionLabel} ${rowRegion_subrowMask_tot_BH_mm3} ${rowRegion_subrowMask_outsideBrain_BH_pct} ${rowRegion_subrowMask_inBrain_LH_mm3} ${rowRegion_subrowMask_inBrain_RH_mm3} ${rowRegionLateralityIndex} LH_%composition_per_${subrowMaskName}: - - RH_%composition_per_${subrowMaskName}: - - " 
+     # the four dashes after LH and RH colums below are to open space for minInt, maxInt, minIntXYZ, maxIntXYZ in the subrows below:
+     rowRegionLocalizationString="${rowRegionIntensity} ${rowRegionLabel} ${rowRegion_subrowMask_tot_BH_mm3} ${rowRegion_subrowMask_outsideBrain_BH_pct} ${rowRegion_subrowMask_inBrain_LH_mm3} ${rowRegion_subrowMask_inBrain_RH_mm3} ${rowRegionLateralityIndex} LH_%composition_per_${subrowMaskName}: - - - - RH_%composition_per_${subrowMaskName}: - - - - " 
      echo "${rowRegionLocalizationString}" >> ${tempDir}/rowRegionLocalizationStrings_${rowMask}.txt
      while read intersection_twoHems; do
        # EDITME: number of dots needs to match number of real fields in rowRegionLocalizationString

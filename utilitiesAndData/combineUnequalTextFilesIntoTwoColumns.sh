@@ -227,8 +227,8 @@ for longerCounter in `seq 1 $longerFileCleanLineCount`; do
    longerFileField=`cat ${longerFileClean} | sed -n -e "${longerCounter}p"`
    #echo "DEBUG: longerFileField = ${longerFileField}"
    if [ ${longerCounter} -gt ${shorterFileCleanLineCount} ]; then
-      # TBD: below three-in-a-row blankFiller is temporary and due to need in cluster report (two extra columns: peakValue and peakXYZ)
-      shorterFileField="${blankFiller} ${blankFiller} ${blankFiller}"
+      # TBD: below five-in-a-row blankFiller is temporary and due to need in cluster report (four extra columns: minInt, maxInt, minIntXYZ, and maxIntXYZ)
+      shorterFileField="${blankFiller} ${blankFiller} ${blankFiller} ${blankFiller} ${blankFiller}"
    else
       shorterFileField=`cat ${shorterFileClean} | sed -n -e "${longerCounter}p"`
    fi
