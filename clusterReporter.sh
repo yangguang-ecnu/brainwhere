@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # LOCATION: 	$bwDir
-# CALL AS:	$bwDir/clusterReporter.sh myMNI1mmRegisteredClusterMask.nii.gz myMNI1mmRegisteredStatsVolume.nii.gz'[n]' (where n is volume for which you want to know peak intensities)
+# CALL AS:	$bwDir/clusterReporter.sh myMNI1mmRegisteredClusterMask.nii.gz myMNI1mmRegisteredStatsVolume.nii.gz'[n]' (where n is volume for which you want to know intensity extrema)
 #
 # !!!! SEE LINES CONTAINING "EDITME" FOR PLACES TO MAKE CHANGES (per computer, per study, parameter tweaks, etc.)
 #
@@ -10,7 +10,7 @@
 #
 # DESCRIPTION:
 # Localizes the voxels endorsed in the user-provided cluster mask (first
-# command-line argument), and provides peak intensity and corresponding
+# command-line argument), and provides min and max intensity and corresponding
 # coordiantes from user-specified volume (second command-line argument)
 # 
 # STYSTEM REQUIREMENTS:
@@ -26,9 +26,9 @@
 #   been registered into MNI 1mm space, and is filled only with integer values 1
 #   to 240 inclusive, with 0 reserved for background voxels.
 # - second user-supplied argument is a 1mmMNI-registered 3D volume containing
-#   some value for which the user would like the peak (and its location)
-#   reported. This could be a tstat, r-sq, AUC, or any other intensity of
-#   interest. 
+#   some value for which the user would like the intensity extrema (and
+#   locations) reported. This could be a tstat, r-sq, AUC, or any other intensity
+#   of interest. 
 #
 # OTHER ASSUMPTIONS:
 #
@@ -384,7 +384,7 @@ while [ $mainLoopCounter -lt 2 ]; do
         fi
      done
      # EDITME: path to script called below may need to change per machine. Also the third argument to the script is the character used as a blank-filler (should match the blank filler a few lines down from here)
-     # TBD: right now there is a cheat in the called script to put in two extra dashes (for peakValue and peakXYZ)
+     # TBD: right now there is a cheat in the called script to put in four extra dashes (for minInt, maxInt, minIntXYZ, maxIntXYZ)
      sh ${bwDir}/utilitiesAndData/combineUnequalTextFilesIntoTwoColumns.sh ${tempDir}/intersectionsOf${rowRegionName}_LH.txt ${tempDir}/intersectionsOf${rowRegionName}_RH.txt - >> ${tempDir}/intersections_twoHems_noBlanks_${rowRegionName}.txt
      # the four dashes after LH and RH colums below are to open space for minInt, maxInt, minIntXYZ, maxIntXYZ in the subrows below:
      rowRegionLocalizationString="${rowRegionIntensity} ${rowRegionLabel} ${rowRegion_subrowMask_tot_BH_mm3} ${rowRegion_subrowMask_outsideBrain_BH_pct} ${rowRegion_subrowMask_inBrain_LH_mm3} ${rowRegion_subrowMask_inBrain_RH_mm3} ${rowRegionLateralityIndex} LH_%composition_per_${subrowMaskName}: - - - - RH_%composition_per_${subrowMaskName}: - - - - " 
