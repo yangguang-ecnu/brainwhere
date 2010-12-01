@@ -437,14 +437,16 @@ done # done with main loop controlled by mainLoopCounter
    echo "# (one line of column headings followed by one row per row region for import into excel):"
    echo "# (rows sorted from row region with greatest volume of activation to row region with least volume of activation)"
    echo ""
-   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH COMPOSITION.OF.REGION.IN.RH"
+   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH"
    cat ${tempDir}/rowRegionLocalizationStrings_atlasMask.txt | column -t
+   # TBD: just kill the extra columns if an intensity mask wasn't provided?
    echo ""
    echo ""
    echo ""
    echo "(following rows formatted as above, but each row represents a cluster in the clusterMask input by the user"
-   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH COMPOSITION.OF.REGION.IN.RH"
+   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH"
    cat ${tempDir}/rowRegionLocalizationStrings_clusterMask.txt | column -t
+   # TBD: just kill the extra columns if an intensity mask wasn't provided?
 
 
 echo ""
