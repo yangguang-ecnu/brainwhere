@@ -21,7 +21,8 @@
 
 
 # ------------------------- START: fxn definitions ------------------------- #
-source ~stowler/scripts/stowlerIncludesForMRI.sh
+
+source $bwDir/utlitiesAndData/brainwhereCommonFunctions.sh
 
 fxnPrintUsage() {
    #EDITME: customize for each script:
@@ -317,7 +318,7 @@ if [ $screen -eq 1 ]; then
 	for blind in `echo ${blindList}`; do
 		lesionList="${lesionList} /data/home/stowler/lesionAttempt0/${blind}_lesion.nii.gz"
 	done
-	sh ~stowler/scripts/stowler-checkImageBasics.sh "${lesionList}"
+	sh ${bwDir}/displayImageGeometry.sh "${lesionList}"
 
 
 
@@ -334,7 +335,7 @@ if [ $screen -eq 1 ]; then
 			anatomicList="${anatomicList} ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.3danat+orig.HEAD"
 		done
 	done
-	sh ~stowler/scripts/stowler-checkImageBasics.sh "${anatomicList}"
+	sh ${bwDir}/displayImageGeometry.sh "${anatomicList}"
 
 
 	
@@ -349,7 +350,7 @@ if [ $screen -eq 1 ]; then
 			epiList="${epiList} ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.epi+orig.HEAD"
 		done
 	done
-	sh ~/scripts/stowler-checkImageBasics.sh "${epiList}"
+	sh ${bwDir}/displayImageGeometry.sh "${epiList}"
 
 
 
@@ -369,8 +370,8 @@ if [ $screen -eq 1 ]; then
 			done # end of condition loop
 		done # end of session loop
 	done # end of blind loop
-	sh ~/scripts/stowler-checkImageBasics.sh "${buckList}"
-	sh ~/scripts/stowler-checkImageBasics.sh "${respList}"
+	sh ${bwDir}/displayImageGeometry.sh "${buckList}"
+	sh ${bwDir}/displayImageGeometry.sh "${respList}"
 
 	
 	
@@ -429,7 +430,7 @@ if [ $gather -eq 1 ]; then
 			t1list="${t1list} ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz"
 		done # end of session loop
         done # end of blind loop
-        sh ~stowler/scripts/stowler-checkImageBasics.sh "${t1list}"
+        sh ${bwDir}/displayImageGeometry.sh "${t1list}"
 
 
        	echo ""
@@ -444,7 +445,7 @@ if [ $gather -eq 1 ]; then
 			epiList="${epiList} ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi.nii.gz"
 		done # end of session loop
         done # end of blind loop
-        sh ~stowler/scripts/stowler-checkImageBasics.sh "${epiList}"
+        sh ${bwDir}/displayImageGeometry.sh "${epiList}"
 
 
         echo ""
@@ -475,8 +476,8 @@ if [ $gather -eq 1 ]; then
 			done # end of condition loop
 		done # end of session loop
 	done # end of blind loop
-        sh ~stowler/scripts/stowler-checkImageBasics.sh "${respList}"
-        sh ~stowler/scripts/stowler-checkImageBasics.sh "${buckList}"
+        sh ${bwDir}/displayImageGeometry.sh "${respList}"
+        sh ${bwDir}/displayImageGeometry.sh "${buckList}"
 
 
 
@@ -500,7 +501,7 @@ if [ $process -eq 1 ]; then
 
 			# skull-strip, then register T1 to 1mmMNI152 space (will handle EPI on own):
 			mv ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz
-			sh ~stowler/scripts/stowler-registerTo1mmMNI152.sh \
+			sh ${bwDir}/registerTo1mmMNI152.sh \
 			-s ${blind} \
 			-t ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz \
 			-o ${outDir}/${blind}/${session}/afnifiles \
@@ -614,7 +615,7 @@ if [ $process -eq 1 ]; then
 			     --out=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz
 
 			ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped*
-			sh ~stowler/scripts/stowler-checkImageBasics.sh ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped*
+			sh ${bwDir}/displayImageGeometry.sh ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped*
 
 			echo ""
 			echo ""
@@ -677,9 +678,8 @@ if [ $generateClusterReport -eq 1 ]; then
 			-prefix /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz \
 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz.nii.gz
 
-			cd /data/birc/RESEARCH/atlases/stowler-localization
-			sh stowler-clusterReport4-3roi.sh \
-				/home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz | tee -a /home/stowler/toScreen-r01clusterReports/${blind}_${session}__clust.16thresh.50ul_report.txt
+			${bwDir}/clusterReporter.sh \
+				/home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz | tee -a /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_report.txt
 
 			echo ""
 			echo ""
