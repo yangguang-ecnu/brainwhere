@@ -224,8 +224,8 @@ for image in $t1 $lesion $epi $buck; do
 done
 cat ${tempDir}/inputUnformatted.txt | column -t
 echo ""
-echo "DEBUG: Happy? (Return to continue, ctrl-c to exit)"
-read
+#echo "DEBUG: Happy? (Return to continue, ctrl-c to exit)"
+#read
 
 # ================================================================= #
 # copy images to $tempDir:
