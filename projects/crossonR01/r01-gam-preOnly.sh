@@ -681,7 +681,7 @@ if [ $generateClusterReport -eq 1 ]; then
 
 			rm -f /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_reportBW.txt
 			${bwDir}/clusterReporter-3roiOnly.sh \
-				/home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz | tee -a /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_reportBW.txt
+				/home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz | tee -a /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_reportBW.txt
 
 			echo ""
 			echo ""
