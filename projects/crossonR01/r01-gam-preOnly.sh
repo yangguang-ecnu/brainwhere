@@ -670,18 +670,18 @@ if [ $generateClusterReport -eq 1 ]; then
 			#
 			# the equilavalent of 3dclust -1Dformat -nosum -1dindex 0 -1tindex 0 -2thresh -0.16 0.16 -dxyz=1 1.75 50 [INPUT BUCK]
 			# .....is 3dmerge -dxyz=1 -1clust_order 1.75 50 -2thresh -0.16 0.16 -1dindex 0 -1tindex 0 -prefix [OUTPUT FILE] [INPUT BUCK] 
-			rm -f /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz
+			rm -f /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz
 			3dmerge \
 			-dxyz=1 \
 			-1clust_order 1.75 50 \
 			-2thresh -0.16 0.16 \
 			-1dindex 0 -1tindex 0 \
-			-prefix /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz \
+			-prefix /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz \
 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz.nii.gz
 
-			rm -f /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_report.txt
-			${bwDir}/clusterReporter.sh \
-				/home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz | tee -a /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_report.txt
+			rm -f /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_reportBW.txt
+			${bwDir}/clusterReporter-3roiOnly.sh \
+				/home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_mask.nii.gz | tee -a /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_reportBW.txt
 
 			echo ""
 			echo ""
