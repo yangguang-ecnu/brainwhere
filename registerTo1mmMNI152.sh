@@ -89,7 +89,7 @@ epi=""
 buck=""
 
 # argument processing with getopt:
-set -- `getopt s:t:o:l:e: "$@"`
+set -- `getopt s:t:o:l:e:b: "$@"`
 [ $# -lt 1 ] && exit 1	# getopt failed
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -198,6 +198,7 @@ echo ""
 
 fxnSetTempDir                 # setup and create $tempDir if necessary
 # TBD: Verify that destination directories exist and are user-writable:
+mkdir -p ${outDir}
 
 echo ""
 echo ""
@@ -424,7 +425,7 @@ if [ -s "`echo ${buck}`" ]; then
 	#     --out=${tempDir}/${blind}_epi_warped
 	applywarp --ref=${FSLDIR}/data/standard/MNI152_T1_1mm --in=${tempDir}/${blind}_buck --warp=${tempDir}/${blind}_nonlinear_transf --premat=${tempDir}/${blind}_funct2struct.mat --out=${tempDir}/${blind}_buck_warped
 
-	ls -l ${tempDir}/${blind}_epi_warped*
+	ls -l ${tempDir}/${blind}_buck_warped*
 fi
 
 echo ""
