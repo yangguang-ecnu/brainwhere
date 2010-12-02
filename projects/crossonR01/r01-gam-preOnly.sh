@@ -22,17 +22,17 @@
 
 # ------------------------- START: fxn definitions ------------------------- #
 
-source $bwDir/utlitiesAndData/brainwhereCommonFunctions.sh
+source $bwDir/utilitiesAndData/brainwhereCommonFunctions.sh
 
 fxnPrintUsage() {
    #EDITME: customize for each script:
    echo >&2 "$0 - a script to process r01 INT2 data"
-   echo >&2 "Usage: $0 [-s] [-g] [-p] [-c] "
+   echo >&2 "Usage: $0 [-s] [-g] [-p] [-c] [subjectID]"
    echo >&2 "  -s   screen input files"
    echo >&2 "  -g   gather input files"
    echo >&2 "  -p   process input files into 1mmMNI152-registered cluster maps"
    echo >&2 "  -c   generate cluster reports"
-   echo >&2 "(subject list is currently defined in the script, not on the commandline)"
+   echo >&2 "(subjectIDs pulled from script if not specified on the commandline)"
 }
 
 
