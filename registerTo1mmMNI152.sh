@@ -4,7 +4,7 @@
 # USAGE:           (see fxnPrintUsage() function below)
 #
 # CREATED:	   201008?? by stowler@gmail.com http://brainwhere.googlecode.com
-# LAST UPDATED:	   20101201 by stowler@gmail.com
+# LAST UPDATED:	   20101206 by stowler@gmail.com
 #
 # DESCRIPTION:
 # Registers T1 to the 1mm MNI152 template, along with optional lesion mask deweighting and application of transform to EPI
@@ -22,21 +22,22 @@
 #
 #
 # TBD: accept HEAD/BRIK also
-# TBD: accept multiple epi-aligned images?
-# TBD: add converstion to RPI
 
 # ------------------------- START: fxn definitions ------------------------- #
 
 fxnPrintUsage() {
    #EDITME: customize for each script:
-   echo >&2 "$0 - a script to register unstriped T1, lesion mask, and epi to 1mmMNI152 space"
-   echo >&2 "Usage: registerTo1mmMNI152.sh \\"
-   echo >&2 "  -s <subjectID>        \\"
-   echo >&2 "  -t <t1.nii>           \\"
-   echo >&2 "  -o <FullPathToOutdir> \\"
-   echo >&2 "[ -l <lesion.nii> ]     \\"
-   echo >&2 "[ -e <epi.nii> ]     \\"
-   echo >&2 "[ -b <buck.nii> ] "
+   echo >&2 "$0 - a script to register unstriped T1, lesion mask, EPI, and EPI-registered volumes (buck, etc.) to 1mmMNI152 space"
+   echo >&2 "Usage: registerTo1mmMNI152.sh      \\"
+   echo >&2 "  -s <subjectID>                   \\"
+   echo >&2 "  -t <t1.nii>                      \\"
+   echo >&2 "  -o <FullPathToOutdir>            \\"
+   echo >&2 "[ -l <lesion.nii>                  \\ ]"
+   echo >&2 "[ -e <epi.nii>                     \\ ]"
+   echo >&2 "[ <imageRegisteredToAboveEPI.nii>  \\ ]"
+   echo >&2 "[ <aSecondEPIregisteredImage.nii>  \\ ]"
+   echo >&2 "[ <aThirdEPIregisteredImage.nii>   \\ ]"
+   echo >&2 "(and so on, listing as many volumes as you like after epi.nii, as long as they've been preregistered to epi.nii)"
 }
 
 
@@ -89,7 +90,7 @@ epi=""
 buck=""
 
 # argument processing with getopt:
-set -- `getopt s:t:o:l:e:b: "$@"`
+set -- `getopt s:t:o:l:e: "$@"`
 [ $# -lt 1 ] && exit 1	# getopt failed
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -98,9 +99,8 @@ while [ $# -gt 0 ]; do
       -o)   outDir="${2}"; shift ;;
       -l)   lesion="${2}"; shift ;;
       -e)   epi="${2}"; shift ;;
-      -b)   buck="${2}"; shift ;;
       --)   shift; break ;;
-      -*)   echo >&2 "usage: $0 - a short usage note "; exit 1 ;;
+      -*)   echo >&2 "usage: $0 - TBD: a short usage note "; exit 1 ;;
        *)   break ;; # terminate while loop
     esac
     shift
@@ -165,17 +165,21 @@ if [ ! -z ${epi} ]; then
 	fi
 fi
 
-if [ ! -z ${buck} ]; then
-	fxnValidateImages ${buck}
-	if [ $? -eq 1 ]; then 
-		echo ""
-		echo "ERROR: $buck is not a valid image"
-		echo ""
-		fxnPrintUsage
-		echo ""
-		exit 1
+for image in "$@"; do
+	if [ ! -z ${image} ]; then
+		fxnValidateImages ${image}
+		if [ $? -eq 1 ]; then 
+			echo ""
+			echo "ERROR: $image is not a valid image"
+			echo ""
+			fxnPrintUsage
+			echo ""
+			exit 1
+		#else
+		#	echo "DEBUG $image is a valid image. Yay!"
+		fi
 	fi
-fi
+done
 
 # ------------------------- FINISHED: invocation ------------------------- #
 
@@ -217,7 +221,7 @@ echo "Images to nonlinear register into 1mmMNI152"
 echo "-IMPORTANT: a lesion must match T1's geometry"
 echo "-IMPORTANT: images following EPI must match EPI geometry"
 sh ${bwDir}/displayImageGeometry.sh -n ${t1} >> ${tempDir}/inputUnformatted.txt
-for image in $t1 $lesion $epi $buck; do
+for image in $t1 $lesion $epi "${@}"; do
 	if [ -s $image ]; then
 		sh ${bwDir}/displayImageGeometry.sh -r $image >> ${tempDir}/inputUnformatted.txt
 	fi
@@ -260,6 +264,18 @@ if [ -s "`echo ${buck}`" ]; then
         -inset ${buck}
 	ls -1 ${tempDir}/${blind}_buck*
 fi
+for image in "${@}"; do
+        if [ -s "`echo ${image}`" ]; then
+                imageBasename="`echo ${image} | xargs basename | xargs ${FSLDIR}/bin/remove_ext`"
+                #echo "DEBUG imageBasename is ${imageBasename}"
+		3dresample \
+		-orient rpi \
+		-prefix ${tempDir}/${imageBasename}.nii.gz \
+		-inset ${image}
+		ls -1 ${tempDir}/${imageBasename}.*
+	fi
+done
+
 
 
 # ================================================================= #
@@ -412,21 +428,22 @@ if [ -s "`echo ${epi}`" ]; then
 	ls -l ${tempDir}/${blind}_epi_warped*
 fi
 
-if [ -s "`echo ${buck}`" ]; then
-	echo ""
-	echo ""
-	echo "applying nonlinear warp to buck file (about 30 minutes)..."
-	ls -l ${tempDir}/${blind}_buck*
-	#applywarp \
-	#     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
-	#     --in=${tempDir}/${blind}_epi \
-	#     --warp=${tempDir}/${blind}_nonlinear_transf \
-	#     --premat=${tempDir}/${blind}_funct2struct.mat \
-	#     --out=${tempDir}/${blind}_epi_warped
-	applywarp --ref=${FSLDIR}/data/standard/MNI152_T1_1mm --in=${tempDir}/${blind}_buck --warp=${tempDir}/${blind}_nonlinear_transf --premat=${tempDir}/${blind}_funct2struct.mat --out=${tempDir}/${blind}_buck_warped
-
-	ls -l ${tempDir}/${blind}_buck_warped*
-fi
+for image in "${@}"; do
+	if [ -s "`echo ${image}`" ]; then
+		echo ""
+		echo ""
+		imageBasename="`echo ${image} | xargs basename | xargs ${FSLDIR}/bin/remove_ext`"
+		echo "DEBUG imageBasename is ${imageBasename}"
+		echo "applying nonlinear warp to ${imageBasename} (probably 30 or fewer minutes)..."
+		applywarp \
+		--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
+		--in=${tempDir}/${imageBasename} \
+		--warp=${tempDir}/${blind}_nonlinear_transf \
+		--premat=${tempDir}/${blind}_funct2struct.mat \
+		--out=${tempDir}/${imageBasename}_warped.nii.gz
+		ls -l ${tempDir}/${imageBasename}_warped*
+	fi
+done
 
 echo ""
 echo ""
