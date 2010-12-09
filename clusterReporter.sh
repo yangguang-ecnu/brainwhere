@@ -272,11 +272,9 @@ mkdir -p ${tempDir}/atlasMask
 mkdir -p ${tempDir}/clusterMask
 
 echo ""
-echo "calling augmentAndSplitAtlas.sh to augment and split the canonical atlas (${standardParent}/1mmHarvardOxfordCortical.nii.gz)"
+echo "calling augmentAndSplitAtlas.sh to augment and split the canonical atlas"
 # augment and split the canonical atlas:
-# EDITME: edit to change atlas used
-# sh ${bwDir}/utilitiesAndData/augmentAndSplitAtlas.sh ${standardParent}/1mmCrosson3roiOnly.nii.gz ${tempDir}/atlasMask 
-sh ${bwDir}/utilitiesAndData/augmentAndSplitAtlas.sh ${standardParent}/1mmHarvardOxfordCortical.nii.gz ${tempDir}/atlasMask 
+sh ${bwDir}/utilitiesAndData/augmentAndSplitAtlas.sh ${standardParent}/${atlasName}.nii.gz ${tempDir}/atlasMask 
 
 echo ""
 echo "calling augmentAndSplitAtlas.sh to augment and split the user-specified cluster mask (${clusterMask})"
