@@ -232,9 +232,9 @@ if [ -z ${intensityVolume} ]; then
 fi
 
 
-echo ""
-echo "DEBUG: invocation passed all tests. Continue?"
-read
+#echo ""
+#echo "DEBUG: invocation passed all tests. Continue?"
+#read
 
 
 # ------------------------- FINISHED: check invocation ------------------------- #
