@@ -87,7 +87,6 @@ t1=""
 outDir=""
 lesion=""
 epi=""
-buck=""
 
 # argument processing with getopt:
 set -- `getopt s:t:o:l:e: "$@"`
@@ -256,13 +255,6 @@ if [ -s "`echo ${epi}`" ]; then
         -prefix ${tempDir}/${blind}_epi.nii.gz \
         -inset ${epi}
 	ls -1 ${tempDir}/${blind}_epi*
-fi
-if [ -s "`echo ${buck}`" ]; then
-	3dresample \
-        -orient rpi \
-        -prefix ${tempDir}/${blind}_buck.nii.gz \
-        -inset ${buck}
-	ls -1 ${tempDir}/${blind}_buck*
 fi
 for image in "${@}"; do
         if [ -s "`echo ${image}`" ]; then
