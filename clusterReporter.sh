@@ -1,12 +1,16 @@
 #!/bin/sh
 #
 # LOCATION: 	$bwDir
-# CALL AS:	$bwDir/clusterReporter.sh myMNI1mmRegisteredClusterMask.nii.gz myMNI1mmRegisteredStatsVolume.nii.gz'[n]' (where n is volume for which you want to know intensity extrema)
+# CALL AS:	(see fxnPrintUsage() below)
 #
 # !!!! SEE LINES CONTAINING "EDITME" FOR PLACES TO MAKE CHANGES (per computer, per study, parameter tweaks, etc.)
 #
 # CREATED:	2010     by stowler@gmail.com http://brainwhere.googlecode.com
-# LAST UPDATED:	20101130 by stowler@gmail.com
+# LAST UPDATED:	20101209 by stowler@gmail.com
+# - added fxnPrintUsage
+# - removed some commented legacy code
+# - added proper invocation and argument handling
+# - added mandatory argument for sending output to a text file
 #
 # DESCRIPTION:
 # Localizes the voxels endorsed in the user-provided cluster mask (first
@@ -55,41 +59,33 @@
 
 # ------------------------- START: fxn definitions ------------------------- #
 
+fxnPrintUsage() {
+   #EDITME: remember to update with changes to available atlases
+   #REMEMBER: using atlas names instead of a shorter code so that atlas used is unambig. represented in commandline history/notes"
+   echo >&2 "clusterReporter.sh - a script to report the atlas-based locations of voxels in a user-provided mask (cluster mask, lesion mask) and, optionally, peak intensity coordinates in a user-provided intensity volume (tstat, R2, etc)"
+   echo >&2 ""
+   echo >&2 "Usage: clusterReporter.sh                         \\"
+   echo >&2 "  -m maskOfClustersOrLesionOrAnythingElse.nii     \\"
+   echo >&2 "[ -i intensityVolumeForPeakReporting.nii          \\ ]"
+   echo >&2 "  -o /path/to/outputTextFile.txt                  \\"
+   echo >&2 "  -a <exact name of ONE atlas on which to localize the your -m mask (see below) >"
+   echo >&2 "" 
+   echo >&2 "Names of the a priori atlases you may include in command:" 
+   echo >&2 "(view any: fslview ${bwDir}/utlitiesAndData/localization/[atlasName].nii.gz)"
+   echo >&2 "" 
+   echo >&2 "  atlasName                       atlasDescription"
+   echo >&2 "  --------------------------------------------------------------------------------------"
+   echo >&2 "  1mmHarvardOxfordCortical        48 regions, as distributed with FSL"
+   echo >&2 "  1mmHarvardOxfordSubcortical     21 regions, as distributed with FSL"
+   echo >&2 "  1mmCrosson3roiOnly              3 custom regions: posterior perisylvian, lateral frontal, medial frontal"
+   echo >&2 "  1mmCrosson3roi                  3 custom regions as above, surrounded by remaining 34 regions from original 48-region mask"
+   echo >&2 ""
+   echo >&2 ""
+}
+
 
 
 # ------------------------- FINISHED: fxn definitions ------------------------- #
-
-
-
-# ------------------------- START: check invocation ------------------------- #
-#if [ $# != 1 ]; then
-#	echo ""
-#	echo "please call as bfc_comparison.sh <ucr2blindNum>"
-#	echo ""
-#	exit
-#fi
-
-
-# Verify that input files exist:
-# echo "Verifying that the expected input files exist:"
-# echo ""
-# ls -l $blahblahblah
-
-# Verify that destination directories exist and are user-writable:
-# blindRootParent=`dirname ${blindRoot}`
-# echo ""
-# echo "Verifying that either ${blindRootParent} or ${blindRoot} exists and is user-writable:"
-# echo ""
-# ls -ld ${blindRootParent}
-# ls -ld ${blindRoot}
-
-# If interactive script: give user a chance to stop or continue depending on whether 
-# they're happy with the results of input and output destination seen above:
-# echo "Hit ENTER to continue"
-# read
-
-# ------------------------- FINISHED: check invocation ------------------------- #
-
 
 
 # ------------------------- START: definitions and constants ------------------------- #
@@ -97,8 +93,6 @@
 # first: anything related to command-line arguments:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # e.g. firstArgumentValue="$1"
-clusterMask="$1"
-intensityVolume="$2"
 
 
 # second: basic system resources: 
@@ -108,90 +102,137 @@ scriptPID="$$"				# ...assign a constant if not calling from a script
 scriptUser=`whoami`			# ...used in file and dir names
 startDate=`date +%Y%m%d` 		# ...used in file and dir names
 startDateTime=`date +%Y%m%d%H%M%S`	# ...used in file and dir names
-#cdMountPoint
 startDir="`pwd`"
 bwDir=/data/birc/RESEARCH/brainwhere
 source ${bwDir}/utilitiesAndData/brainwhereCommonFunctions.sh
 
 # EDITME: change per system
-#standardParent=/Users/stowler/atlases  # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
+#standardParent=/Users/stowler/atlases                 # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
 standardParent=${bwDir}/utilitiesAndData/localization  # standardParent is the parent directory of where I keep things like customized standardTemplates and atlases
-standardTemplate=MNI152_T1_1mm         # standardTemplate is a label used throughout this script
+standardTemplate=MNI152_T1_1mm                         # standardTemplate is a label used throughout this script
 standardTemplateFile=${FSLDIR}/data/standard/${standardTemplate}_brain_mask.nii.gz
-
-# third: variables for filesystem locations, filenames, long arguments, etc.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-#intensity="t1bfc0"			# ...to be used in file and folder names
-#orientation="radOrig"			# ...ditto
-
-
-# set image directories:
-
-# ${blindParent}:
-# parent dir where each subject's $blindDir reside (e.g. parent of blind1, blind2, etc.)
-# e.g. blindParent="/home/leonardlab/images/ucr"
-# e.g. allows mkdir ${blindParent}/importedSemiautoLatvens ${blindParent}/blind1
-
-# ${blindDir}: 
-# dir for each subject's images and image directories:
-# e.g. blindDir="/home/leonardlab/images/ucr/${blind}"
-# e.g. blindDir="${blindParent}/${blind}"
-
-# ${origDir}: 
-# dir or parent dir where original images will be stored (or are already stored if formatted)
-# e.g. origDir="${blindDir}/acqVolumes"
-
-# ${anatRoot}}:
-# where the groomed images directory, among others, will live:
-# e.g. anatRoot="${blindDir}/anat-${intensity}-${orientation}"
-
-# ${tempParent}:
-# parent dir of ${tempDir}s where a brain's temp files will be stored
-# (If tempParent or tempDir needs to include blind, remember to assign value to $blind FIRST!)
-# e.g. tempParent="${blindParent}/tempProcessing"
-# EDITME: changes per system
-#tempParent="/Users/stowler/temp"
-#tempParent="/home/stowler/temp"
-
-# ${tempDir}:
-# dir where temp files for individual processing runs can be stored
-# e.g. tempDir="${tempRoot}/${currentDateTime}-from_${scriptName}.${scriptPID}"
-#tempDir="${tempParent}/${startDateTime}-from_${scriptName}.${scriptPID}"
-
-# ...source directories for input images:
-# (script should copy images from these [probably poorly organized] source directories
-# to $origDir
-# e.g. sourceT1acqDir="/Users/Shared/cepRedux/acqVolumes"
-# e.g. sourceLatvenDir="/Users/Shared/cepRedux/semiautoLatvens"
-# e.g. sourceBrainDir="/Users/Shared/cepRedux/semiautoExtractedBrains"
-# e.g. sourceFlairDir="/Users/Shared/libon-final/origOrientImageJ" 
-# e.g. sourceWMHImaskDir="/Users/Shared/libon-final/masksOrientImageJ"  
-
-
-
-# ...brainsuite09 paths and definitions:
-#BSTPATH="/data/pricelab/scripts/sdt/brainsuite09/brainsuite09.x86_64-redhat-linux-gnu"
-#BSTPATH="/Users/stowler/Downloads/brainsuite09.i386-apple-darwin9.0"
-#export BSTPATH
-#bstBin="${BSTPATH}/bin/"
-#export bstBin
-#ATLAS="${BSTPATH}/atlas/brainsuite.icbm452.lpi.v08a.img"
-#export ATLAS
-#ATLASLABELS="${BSTPATH}/atlas/brainsuite.icbm452.lpi.v09e3.label.img"
-#export ATLASLABELS
-#ATLASES="--atlas ${ATLAS} --atlaslabels ${ATLASLABELS}"
-#export ATLASES
-
-# ...FSL variables
-# FSLDIR=""
-# export FSLDIR
-# FSLOUTPUTTYPEorig="${FSLOUTPUTTYPE}"
-# export FSLOUTPUTTYPE=NIFTI_GZ
-
-
 
 
 # ------------------------- FINISHED: definitions and constants ------------------------- #
+
+# ------------------------- START: check invocation ------------------------- #
+
+# check for number of arguments:
+#if [ $# -lt 1 ] ; then
+#   echo ""
+#   echo "ERROR: no files specified"
+#   echo ""
+#   fxnPrintUsage
+#   echo ""
+#   exit 1
+#fi
+
+#initialization of variables that receive values during argument processing
+clusterMask=""
+intensityVolume=""
+atlasName=""
+outFile=""
+
+# argument processing with getopt:
+set -- `getopt m:i:a:o: "$@"`
+[ $# -lt 1 ] && exit 1  # getopt failed
+while [ $# -gt 0 ]; do
+    case "$1" in
+      -m)   clusterMask="${2}"; shift ;;
+      -i)   intensityVolume="${2}"; shift ;;
+      -a)   atlasName="${2}"; shift ;;
+      -o)   outFile="${2}"; shift ;;
+      --)   shift; break ;;
+      -*)   echo >&2 "usage: $0 - TBD: a short usage note "; exit 1 ;;
+       *)   break ;; # terminate while loop
+    esac
+    shift
+done
+
+# Are we missing any required invocation options? Checking:
+if [ -z ${clusterMask} ]; then
+        echo ""
+        echo "ERROR: you must supply a mask to localize"
+        echo ""
+        fxnPrintUsage
+        echo ""
+        exit 1
+elif [ -z ${atlasName} ]; then
+        echo ""
+        echo "ERROR: you must name the atlas against which you want to localize your mask"
+        echo ""
+        fxnPrintUsage
+        echo ""
+        exit 1
+elif [ -z ${outFile} ]; then
+        echo ""
+        echo "ERROR: you must specify an output file for the report text"
+        echo ""
+        fxnPrintUsage
+        echo ""
+        exit 1
+fi
+
+#check for outDir problems: DNE? unwritable?
+outDir="`dirname ${outFile}`"
+if [ ! -w ${outDir} ]; then
+        echo ""
+        echo "ERROR: the specified directory for your output file (${outDir}) does not exist or is not writable by you"
+        echo ""
+        fxnPrintUsage
+        echo ""
+        exit 1
+fi
+
+# check whether the a priori atlas was properly specified on the command line:
+if [ ! -r ${bwDir}/utilitiesAndData/localization/${atlasName}.nii.gz ]; then
+        echo ""
+        echo "ERROR: ${atlasName} is not a valid atlas name. See valid options below (sensitive to spelling and caps: just copy and paste)"
+        echo ""
+        fxnPrintUsage
+        echo ""
+        exit 1
+fi
+
+# check for bad or nonexistent images :
+fxnValidateImages ${clusterMask}
+if [ $? -eq 1 ]; then
+        echo ""
+        echo "ERROR: ${clusterMask} is not a valid image"
+        echo ""
+        fxnPrintUsage
+        echo ""
+        exit 1
+fi
+
+if [ ! -z ${intensityVolume} ]; then
+        fxnValidateImages ${intensityVolume}
+        if [ $? -eq 1 ]; then
+                echo ""
+                echo "ERROR: ${intensityVolume} is not a valid image"
+                echo ""
+                fxnPrintUsage
+                echo ""
+                exit 1
+        fi
+fi
+
+# TBD: at the time of writing, if no intensityVolume is specified, the clusterMask is assigned to the intensityVolume, which produces nonsensical data for the peak values, but will add code to delete peak columns if there was no $intensityVolume specified
+if [ -z ${intensityVolume} ]; then
+	intensityVolume=${clusterMask}
+	intensityVolumeNotSpecified=1
+fi
+
+
+echo ""
+echo "DEBUG: invocation passed all tests. Continue?"
+read
+
+
+# ------------------------- FINISHED: check invocation ------------------------- #
+
+
+
 
 
 # ------------------------- START: say hi ------------------------- #
@@ -430,23 +471,27 @@ done # done with main loop controlled by mainLoopCounter
             fi
 
 
-# output report to screen for excel import:
-   echo "# CLUSTER REPORT for ${1}"
-   echo "# overall laterality index (L-R)/(L+R) for Crosson regions of interest: ${lateralityIndexTotal_atlasMask}"
-   echo "# (one line of column headings followed by one row per row region for import into excel):"
-   echo "# (rows sorted from row region with greatest volume of activation to row region with least volume of activation)"
-   echo ""
-   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH"
-   cat ${tempDir}/rowRegionLocalizationStrings_atlasMask.txt | column -t
+# output report to screen for excel import, and to $outFile (notice end of EVERY line here):
+   echo "# CLUSTER REPORT for ${1}" | tee -a ${outFile}
+   echo "# overall laterality index (L-R)/(L+R) for Crosson regions of interest: ${lateralityIndexTotal_atlasMask}" | tee -a ${outFile}
+   echo "# (one line of column headings followed by one row per row region for import into excel):" | tee -a ${outFile}
+   echo "# (rows sorted from row region with greatest volume of activation to row region with least volume of activation)" | tee -a ${outFile}
+   echo "" | tee -a ${outFile}
+   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH" | tee -a ${outFile}
+   cat ${tempDir}/rowRegionLocalizationStrings_atlasMask.txt | column -t | tee -a ${outFile}
    # TBD: just kill the extra columns if an intensity mask wasn't provided?
    echo ""
    echo ""
    echo ""
-   echo "(following rows formatted as above, but each row represents a cluster in the clusterMask input by the user"
-   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH"
-   cat ${tempDir}/rowRegionLocalizationStrings_clusterMask.txt | column -t
+   echo "(following rows formatted as above, but each row represents a cluster in the clusterMask input by the user" | tee -a ${outFile}
+   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH" | tee -a ${outFile}
+   cat ${tempDir}/rowRegionLocalizationStrings_clusterMask.txt | column -t | tee -a ${outFile}
    # TBD: just kill the extra columns if an intensity mask wasn't provided?
 
+echo ""
+echo ""
+Wrote cluster report to ${outFile}:
+ls -l ${outFile}
 
 echo ""
 echo ""
