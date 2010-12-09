@@ -7,18 +7,14 @@
 #
 # CREATED:	2010     by stowler@gmail.com http://brainwhere.googlecode.com
 # LAST UPDATED:	20101209 by stowler@gmail.com
-# - added fxnPrintUsage
-# - removed some commented legacy code
-# - added proper invocation and argument handling
-# - added mandatory argument for sending output to a text file
 #
 # DESCRIPTION:
-# Localizes the voxels endorsed in the user-provided cluster mask (first
-# command-line argument), and provides min and max intensity and corresponding
-# coordiantes from user-specified volume (second command-line argument)
+# Localizes the voxels endorsed in the user-provided cluster mask,
+# and provides min and max intensity and corresponding
+# coordiantes from user-specified volume 
 # 
 # STYSTEM REQUIREMENTS:
-#  - system utilities: awk, seq, and column
+#  - system utilities: awk, sed, seq, column
 #  - each apriori atlas against which a clusterMask might be compared must have a number of files in ${standardParent}:
 #    (e.g. standardParent=$bwDir/utilitiesAndData/localization/)
 #        - a multi-intensity atlas mask called ${atlasName}.nii.gz (e.g. 1mmCrosson3roi.nii.gz)
@@ -26,19 +22,16 @@
 #        - a blockMasks directory containing block masks aliged to atlas' standard space (e.g. MNI152_T1_1mm_blockMask_BH.nii.gz MNI152_T1_1mm_blockMask_LH.nii.gz MNI152_T1_1mm_blockMask_RH.nii.gz)
 #
 # INPUT FILES AND PERMISSIONS:
-# - first user-supplied argument is a 3D cluster mask or a lesion mask that has
-#   been registered into MNI 1mm space, and is filled only with integer values 1
-#   to 240 inclusive, with 0 reserved for background voxels.
-# - second user-supplied argument is a 1mmMNI-registered 3D volume containing
-#   some value for which the user would like the intensity extrema (and
-#   locations) reported. This could be a tstat, r-sq, AUC, or any other intensity
-#   of interest. 
+# - 3D cluster mask or a lesion mask that has been registered into MNI 1mm
+#   space, and is filled only with integer values 1 to 240 inclusive, with 0
+#   reserved for background voxels.
+# - a 1mmMNI-registered 3D volume containing some value for which the user
+#   would like the intensity extrema (and locations) reported. This could be a
+#   tstat, r-sq, AUC, or any other intensity of interest. 
 #
 # OTHER ASSUMPTIONS:
 #
 # TBD:
-# - provide choice of atlases
-# - allow for user to not supply an intensity file, instead reporting COG when they don't
 # - average HDR w/ variance with each TR (requires access to resp file)
 #     - maybe a graph with average at each TR and a measure of variance?
 # 
@@ -84,7 +77,6 @@ fxnPrintUsage() {
 }
 
 
-
 # ------------------------- FINISHED: fxn definitions ------------------------- #
 
 
@@ -103,6 +95,7 @@ scriptUser=`whoami`			# ...used in file and dir names
 startDate=`date +%Y%m%d` 		# ...used in file and dir names
 startDateTime=`date +%Y%m%d%H%M%S`	# ...used in file and dir names
 startDir="`pwd`"
+# TBD: test getting $bwDir from environment instead of defining here:
 bwDir=/data/birc/RESEARCH/brainwhere
 source ${bwDir}/utilitiesAndData/brainwhereCommonFunctions.sh
 
@@ -152,21 +145,27 @@ done
 # Are we missing any required invocation options? Checking:
 if [ -z ${clusterMask} ]; then
         echo ""
-        echo "ERROR: you must supply a mask to localize"
+        echo "------------------------------------------------------------------------"
+        echo "ERROR: you must supply a mask that you would like to localize"
+        echo "------------------------------------------------------------------------"
         echo ""
         fxnPrintUsage
         echo ""
         exit 1
 elif [ -z ${atlasName} ]; then
         echo ""
+        echo "------------------------------------------------------------------------"
         echo "ERROR: you must name the atlas against which you want to localize your mask"
+        echo "------------------------------------------------------------------------"
         echo ""
         fxnPrintUsage
         echo ""
         exit 1
 elif [ -z ${outFile} ]; then
         echo ""
+        echo "------------------------------------------------------------------------"
         echo "ERROR: you must specify an output file for the report text"
+        echo "------------------------------------------------------------------------"
         echo ""
         fxnPrintUsage
         echo ""
@@ -177,7 +176,9 @@ fi
 outDir="`dirname ${outFile}`"
 if [ ! -w ${outDir} ]; then
         echo ""
+        echo "------------------------------------------------------------------------"
         echo "ERROR: the specified directory for your output file (${outDir}) does not exist or is not writable by you"
+        echo "------------------------------------------------------------------------"
         echo ""
         fxnPrintUsage
         echo ""
@@ -187,7 +188,9 @@ fi
 # check whether the a priori atlas was properly specified on the command line:
 if [ ! -r ${bwDir}/utilitiesAndData/localization/${atlasName}.nii.gz ]; then
         echo ""
+        echo "------------------------------------------------------------------------"
         echo "ERROR: ${atlasName} is not a valid atlas name. See valid options below (sensitive to spelling and caps: just copy and paste)"
+        echo "------------------------------------------------------------------------"
         echo ""
         fxnPrintUsage
         echo ""
@@ -198,7 +201,9 @@ fi
 fxnValidateImages ${clusterMask}
 if [ $? -eq 1 ]; then
         echo ""
+        echo "------------------------------------------------------------------------"
         echo "ERROR: ${clusterMask} is not a valid image"
+        echo "------------------------------------------------------------------------"
         echo ""
         fxnPrintUsage
         echo ""
@@ -209,7 +214,9 @@ if [ ! -z ${intensityVolume} ]; then
         fxnValidateImages ${intensityVolume}
         if [ $? -eq 1 ]; then
                 echo ""
+		echo "------------------------------------------------------------------------"
                 echo "ERROR: ${intensityVolume} is not a valid image"
+		echo "------------------------------------------------------------------------"
                 echo ""
                 fxnPrintUsage
                 echo ""
@@ -218,6 +225,7 @@ if [ ! -z ${intensityVolume} ]; then
 fi
 
 # TBD: at the time of writing, if no intensityVolume is specified, the clusterMask is assigned to the intensityVolume, which produces nonsensical data for the peak values, but will add code to delete peak columns if there was no $intensityVolume specified
+intensityVolumeNotSpecified=0
 if [ -z ${intensityVolume} ]; then
 	intensityVolume=${clusterMask}
 	intensityVolumeNotSpecified=1
@@ -247,24 +255,16 @@ echo "#################################################################"
 
 # ------------------------- START: body of program ------------------------- #
 
-
-# open dataset as Michelle is accustomed to inspecting:
-# overlay: specified in excel cluster report
-# Talairach View
-# Define Overlay:
-#  Clusterize: rmm 1.8, vmul 50
-#  autoRange: off (set range to 1)
-#  Pos? checked
-#  3 color panes (divisions set at .20 and .24
-
-
-echo ""
-echo ""
-echo "Geometry of your provided clusterMask and intensityVolume must match: "
-echo ""
-sh ${bwDir}/displayImageGeometry.sh $1 $2
-echo "Continue?"
-read
+# check for matching geometry if flag indicates that intensityVolume was provided on commandline:
+if [ ${intensityVolumeNotSpecified} -eq 0 ]; then
+	echo ""
+	echo ""
+	echo "Geometry of your provided clusterMask and intensityVolume must match: "
+	echo ""
+	sh ${bwDir}/displayImageGeometry.sh ${clusterMask} ${intensityVolume}
+	echo "Continue?"
+	read
+fi
 
 
 fxnSetTempDir
