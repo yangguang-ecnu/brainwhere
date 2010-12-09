@@ -397,7 +397,8 @@ while [ $mainLoopCounter -lt 2 ]; do
 			-a ${intensityVolume} \
 			-b ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}.nii.gz \
 			-expr 'a*b' \
-			-prefix ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz
+			-prefix ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz \
+			&>/dev/null
 			ls ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.*
 			subrowRegion_maxInt=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -R | awk '{print $2}'`
 			subrowRegion_minInt=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -R | awk '{print $1}'`
@@ -478,17 +479,20 @@ done # done with main loop controlled by mainLoopCounter
    echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH" | tee -a ${outFile}
    cat ${tempDir}/rowRegionLocalizationStrings_atlasMask.txt | column -t | tee -a ${outFile}
    # TBD: just kill the extra columns if an intensity mask wasn't provided?
-   echo ""
-   echo ""
-   echo ""
+   echo "" | tee -a ${outFile}
+   echo "" | tee -a ${outFile}
+   echo "" | tee -a ${outFile}
    echo "(following rows formatted as above, but each row represents a cluster in the clusterMask input by the user" | tee -a ${outFile}
    echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH" | tee -a ${outFile}
    cat ${tempDir}/rowRegionLocalizationStrings_clusterMask.txt | column -t | tee -a ${outFile}
+   echo "" | tee -a ${outFile}
+   echo "" | tee -a ${outFile}
+   echo "" | tee -a ${outFile}
    # TBD: just kill the extra columns if an intensity mask wasn't provided?
 
 echo ""
 echo ""
-Wrote cluster report to ${outFile}:
+echo "Wrote cluster report to ${outFile}:"
 ls -l ${outFile}
 
 echo ""
