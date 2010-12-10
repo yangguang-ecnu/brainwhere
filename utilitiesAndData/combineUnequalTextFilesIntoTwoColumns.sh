@@ -61,6 +61,9 @@ scriptUser=`whoami`			# ...used in file and dir names
 startDate=`date +%Y%m%d` 		# ...used in file and dir names
 startDateTime=`date +%Y%m%d%H%M%S`	# ...used in file and dir names
 #cdMountPoint
+bwDir="/data/birc/RESEARCH/brainwhere"
+source ${bwDir}/utilitiesAndData/brainwhereCommonFunctions.sh
+
 
 
 # third: variables for filesystem locations, filenames, long arguments, etc.
@@ -163,26 +166,7 @@ tempDir="${tempParent}/${currentDateTime}-from_${scriptName}.${scriptPID}"
 
 # ------------------------- START: body of program ------------------------- #
 
-# Verify that input files exist:
-# echo "Verifying that the expected input files exist:"
-# echo ""
-# ls -l $blahblahblah
-
-# Verify that destination directories exist and are user-writable:
-# blindRootParent=`dirname ${blindRoot}`
-# echo ""
-# echo "Verifying that either ${blindRootParent} or ${blindRoot} exists and is user-writable:"
-# echo ""
-# ls -ld ${blindRootParent}
-# ls -ld ${blindRoot}
-
-# If interactive script: give user a chance to stop or continue depending on whether 
-# they're happy with the results of input and output destination seen above:
-# echo "Hit ENTER to continue"
-# read
-
-
-mkdir ${tempDir}
+fxnSetTempDir
 
 fileLeftOrig="$1"
 fileRightOrig="$2"

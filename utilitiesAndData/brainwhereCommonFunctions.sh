@@ -28,13 +28,14 @@ fxnSetTempDir() {
    # e.g. tempParent="${blindParent}/tempProcessing"
    # (If tempParent or tempDir needs to include blind, remember to assign value to $blind before calling!)
    # EDITME: $tempParent is something that might change on a per-system, per-script, or per-experiment basis:
+   startDateTime=`date +%Y%m%d%H%M%S`      # ...used in file and dir names
    hostname=`hostname -s`
    kernel=`uname -s`
    if [ $hostname = "stowler-mbp" ]; then
       tempParent="/Users/stowler/temp"
    elif [ $kernel = "Linux" ]; then
       tempParent="${HOME}/temp"
-      mkdir ${tempParent}                      #because not everyone will have a ~/temp to begin
+      mkdir ${tempParent} &>/dev/null                     #because not everyone will have a ~/temp to begin
    elif [ $kernel = "Darwin" ] && [ -d /tmp ] && [ -w /tmp ]; then
       tempParent="/tmp"
    else

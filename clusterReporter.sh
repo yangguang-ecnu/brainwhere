@@ -397,8 +397,7 @@ while [ $mainLoopCounter -lt 2 ]; do
 			-a ${intensityVolume} \
 			-b ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}.nii.gz \
 			-expr 'a*b' \
-			-prefix ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz \
-			&>/dev/null
+			-prefix ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz &>/dev/null
 			ls ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.*
 			subrowRegion_maxInt=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -R | awk '{print $2}'`
 			subrowRegion_minInt=`fslstats ${tempDir}/${subrowMask}/intensityBin/intersection_${subrowRegionName}_${hem}-AND-${rowRegionName}_${hem}_intensityProduct.nii.gz -R | awk '{print $1}'`
