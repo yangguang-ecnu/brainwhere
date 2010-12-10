@@ -414,8 +414,10 @@ if [ -s ${standardParent}/labels_${atlas}.txt ]; then
    #   echo "255 BACKGROUNDoutsideBrain" >> labels_${atlas}.txt
    
    #echo "249 BACKGROUNDinAtlasButContralateral" >> labels_${atlas}.txt
-   echo "250 BACKGROUNDinHemButNotAtlas" >> labels_${atlas}.txt
-   echo "251 BACKGROUNDoutsideHemIpsilateral" >> labels_${atlas}.txt
+   #echo "250 BACKGROUNDinHemButNotAtlas" >> labels_${atlas}.txt        ########reworded to below
+   #echo "251 BACKGROUNDoutsideHemIpsilateral" >> labels_${atlas}.txt   ########reworded to below
+   echo "250 BACKGROUNDinHem" >> labels_${atlas}.txt
+   echo "251 BACKGROUNDoutsideHem" >> labels_${atlas}.txt
    #echo "252 BACKGROUNDinBrainContralateralButNotAtlas" >> labels_${atlas}.txt
    #echo "253 BACKGROUNDoutsideBrainContralateral" >> labels_${atlas}.txt
    #echo "254 BACKGROUNDinBrainButNotAtlas" >> labels_${atlas}.txt
@@ -477,10 +479,10 @@ else  # create a list from the values that exist in the mask
             echo "" > /dev/null
             ;;
          251)
-            echo "${intensityPadded} BACKGROUNDoutsideHemIpsilateral" >> labels_${atlas}.txt
+            echo "${intensityPadded} BACKGROUNDoutsideHem" >> labels_${atlas}.txt
             ;;
          250)
-            echo "${intensityPadded} BACKGROUNDinHemButNotAtlas" >> labels_${atlas}.txt
+            echo "${intensityPadded} BACKGROUNDinHem" >> labels_${atlas}.txt
             ;;
          249)
             echo "" > /dev/null

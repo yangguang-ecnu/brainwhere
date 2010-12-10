@@ -470,7 +470,7 @@ done # done with main loop controlled by mainLoopCounter
 
 
 # output report to screen for excel import, and to $outFile (notice end of EVERY line here):
-   echo "# CLUSTER REPORT for ${1}" | tee -a ${outFile}
+   echo "# CLUSTER REPORT for ${$clusterMask}" | tee -a ${outFile}
    echo "# overall laterality index (L-R)/(L+R) for Crosson regions of interest: ${lateralityIndexTotal_atlasMask}" | tee -a ${outFile}
    echo "# (one line of column headings followed by one row per row region for import into excel):" | tee -a ${outFile}
    echo "# (rows sorted from row region with greatest volume of activation to row region with least volume of activation)" | tee -a ${outFile}
