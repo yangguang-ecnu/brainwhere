@@ -414,10 +414,10 @@ echo ""
 echo ""
 echo "applying nonlinear warp to skull-striped T1 (about 1 minute)..."
 applywarp \
-     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
-     --in=${tempDir}/${blind}_t1_brain \
-     --warp=${tempDir}/${blind}_nonlinear_transf \
-     --out=${tempDir}/${blind}_t1_brain_warped
+     	--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
+     	--in=${tempDir}/${blind}_t1_brain \
+     	--warp=${tempDir}/${blind}_nonlinear_transf \
+     	--out=${tempDir}/${blind}_t1_brain_warped
 ls -l ${tempDir}/${blind}_t1_brain_warped*
 
 if [ -s "`echo ${lesion}`" ]; then
@@ -425,11 +425,12 @@ if [ -s "`echo ${lesion}`" ]; then
 	echo ""
 	echo "applying nonlinear warp to lesion (about 1 minute)..."
 	applywarp \
-	     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
-	     --in=${tempDir}/${blind}_lesion \
-	     --warp=${tempDir}/${blind}_nonlinear_transf \
-	     --out=${tempDir}/${blind}_lesion_warped \
-	     --interp=nn
+	     	--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
+	     	--in=${tempDir}/${blind}_lesion \
+	     	--warp=${tempDir}/${blind}_nonlinear_transf \
+	     	--out=${tempDir}/${blind}_lesion_warped \
+	     	--interp=nn \
+ 		-v
 	ls -l ${tempDir}/${blind}_lesion_warped*
 fi
 
@@ -444,8 +445,13 @@ if [ -s "`echo ${epi}`" ]; then
 	#     --warp=${tempDir}/${blind}_nonlinear_transf \
 	#     --premat=${tempDir}/${blind}_funct2struct.mat \
 	#     --out=${tempDir}/${blind}_epi_warped
-	applywarp --ref=${FSLDIR}/data/standard/MNI152_T1_1mm --in=${tempDir}/${blind}_epi --warp=${tempDir}/${blind}_nonlinear_transf --premat=${tempDir}/${blind}_funct2struct.mat --out=${tempDir}/${blind}_epi_warped
-
+	applywarp \
+		--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
+		--in=${tempDir}/${blind}_epi \
+		--warp=${tempDir}/${blind}_nonlinear_transf \
+		--premat=${tempDir}/${blind}_funct2struct.mat \
+		--out=${tempDir}/${blind}_epi_warped \
+		-v 
 	ls -l ${tempDir}/${blind}_epi_warped*
 fi
 
@@ -464,7 +470,7 @@ for image in `echo ${integerVolumes}`; do
 		--warp=${tempDir}/${blind}_nonlinear_transf \
 		--premat=${tempDir}/${blind}_funct2struct.mat \
 		--out=${tempDir}/${imageBasename}_warped.nii.gz \
-		--interp=nn
+		--interp=sinc
 		ls -l ${tempDir}/${imageBasename}_warped*
 	fi
 done
@@ -484,7 +490,7 @@ for image in `echo ${decimalVolumes}`; do
 		--warp=${tempDir}/${blind}_nonlinear_transf \
 		--premat=${tempDir}/${blind}_funct2struct.mat \
 		--out=${tempDir}/${imageBasename}_warped.nii.gz \
-		--interp=trilinear
+		--interp=sinc
 		ls -l ${tempDir}/${imageBasename}_warped*
 	fi
 done
