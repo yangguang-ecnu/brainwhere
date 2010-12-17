@@ -437,7 +437,7 @@ if [ -s "`echo ${epi}`" ]; then
 	echo ""
 	echo ""
 	echo "applying nonlinear warp to epi (about 30 minutes)..."
-	ls -l ${tempDir}/${blind}_epi*
+	#ls -l ${tempDir}/${blind}_epi*
 	#applywarp \
 	#     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
 	#     --in=${tempDir}/${blind}_epi \
@@ -452,11 +452,11 @@ fi
 # the following requires echo $var, not just $var for ws-sep'd values in $var to be subsequently read as multiple values instead of single value containing ws:
 # integer-based volumes like cluster masks are registered with nearest neighbor interpolation:
 for image in `echo ${integerVolumes}`; do
-	if [ -s ${image} ]; then
+	if [ -s "`echo ${image}`" ]; then
 		echo ""
 		echo ""
 		imageBasename="`echo ${image} | xargs basename | xargs ${FSLDIR}/bin/remove_ext`"
-		echo "DEBUG imageBasename is ${imageBasename}"
+		#echo "DEBUG imageBasename is ${imageBasename}"
 		echo "applying nonlinear warp to ${imageBasename} (probably 30 or fewer minutes)..."
 		applywarp \
 		--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
@@ -476,7 +476,7 @@ for image in `echo ${decimalVolumes}`; do
 		echo ""
 		echo ""
 		imageBasename="`echo ${image} | xargs basename | xargs ${FSLDIR}/bin/remove_ext`"
-		echo "DEBUG imageBasename is ${imageBasename}"
+		#echo "DEBUG imageBasename is ${imageBasename}"
 		echo "applying nonlinear warp to ${imageBasename} (probably 30 or fewer minutes)..."
 		applywarp \
 		--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
