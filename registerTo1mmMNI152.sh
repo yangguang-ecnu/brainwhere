@@ -470,7 +470,7 @@ for image in `echo ${integerVolumes}`; do
 		--warp=${tempDir}/${blind}_nonlinear_transf \
 		--premat=${tempDir}/${blind}_funct2struct.mat \
 		--out=${tempDir}/${imageBasename}_warped.nii.gz \
-		--interp=sinc
+		--interp=nn
 		ls -l ${tempDir}/${imageBasename}_warped*
 	fi
 done

@@ -72,6 +72,7 @@ fxnPrintUsage() {
    echo >&2 "  1mmHarvardOxfordSubcortical     21 regions, as distributed with FSL"
    echo >&2 "  1mmCrosson3roiOnly              3 custom regions: posterior perisylvian, lateral frontal, medial frontal"
    echo >&2 "  1mmCrosson3roi                  3 custom regions as above, surrounded by remaining 34 regions from original 48-region mask"
+   echo >&2 "  1mmCrosson2roiVisOnly           2 regions from Harvard Oxford cortical: occipital pole and intracalcarine cortex"
    echo >&2 ""
    echo >&2 ""
 }

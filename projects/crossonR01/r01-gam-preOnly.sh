@@ -240,7 +240,8 @@ echo ""
 fxnSetTempDir                 # setup and create $tempDir if necessary
 #fxnValidateImages $@     # verify that all input images are actually images
 # TBD: Verify that destination directories exist and are user-writable:
-outDir="${HOME}/r01preOnlyBW"
+#outDir="${HOME}/r01preOnlyBW"
+outDir=/data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma
 mkdir -p ${outDir}
 
 if [ $screen -eq 1 ]; then
@@ -670,18 +671,20 @@ if [ $generateClusterReport -eq 1 ]; then
 			#
 			# the equilavalent of 3dclust -1Dformat -nosum -1dindex 0 -1tindex 0 -2thresh -0.16 0.16 -dxyz=1 1.75 50 [INPUT BUCK]
 			# .....is 3dmerge -dxyz=1 -1clust_order 1.75 50 -2thresh -0.16 0.16 -1dindex 0 -1tindex 0 -prefix [OUTPUT FILE] [INPUT BUCK] 
-			rm -f /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz
 			3dmerge \
 			-dxyz=1 \
 			-1clust_order 1.75 50 \
 			-2thresh -0.16 0.16 \
 			-1dindex 0 -1tindex 0 \
-			-prefix /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz \
+			-prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz \
 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz.nii.gz
 
-			rm -f /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_reportBW.txt
-			${bwDir}/clusterReporter-3roiOnly.sh \
-				/home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz | tee -a /home/stowler/toScreen-r01clusterReports/${blind}_${session}_clust.16thresh.50ul_reportBW.txt
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_reportBW_visCtxOnly.txt
+			${bwDir}/clusterReporter.sh \
+			-m ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz \
+			-o ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_reportBW_visCtxOnly.txt \
+			-a 1mmCrosson2roiVisOnly
 
 			echo ""
 			echo ""
