@@ -20,8 +20,15 @@
 # OTHER ASSUMPTIONS:
 # <list or describe>
 #
+# WEAKNESSES:
+# - erases BRIK/HEAD commandline history (applywarp not implemented in afni...yet)
+# - UNTESTED: brain extraction implementation may not be best for all brains (bet -R -v)
+# - UNTESTED: variability in brain extraction may affect registration of T1->MNI152, thereby others->MNI152
+# - UNTESTED: interpolation methods implemented may not be best (masks: nearest neighbor, decimal values: sinc)
+#
 #
 # TBD: accept HEAD/BRIK also
+
 
 # ------------------------- START: fxn definitions ------------------------- #
 
