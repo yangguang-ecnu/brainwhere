@@ -366,6 +366,7 @@ if [ -s "`echo ${epi}`" ]; then
 	flirt \
 	-ref ${tempDir}/${blind}_t1_brain \
 	-in ${tempDir}/${blind}_epi \
+	-inweight ${tempDir}/${blind}_lesionInverted \
 	-dof 7 \
 	-omat ${tempDir}/${blind}_funct2struct.mat
 	echo "...done:"
