@@ -671,20 +671,20 @@ if [ $generateClusterReport -eq 1 ]; then
 			#
 			# the equilavalent of 3dclust -1Dformat -nosum -1dindex 0 -1tindex 0 -2thresh -0.16 0.16 -dxyz=1 1.75 50 [INPUT BUCK]
 			# .....is 3dmerge -dxyz=1 -1clust_order 1.75 50 -2thresh -0.16 0.16 -1dindex 0 -1tindex 0 -prefix [OUTPUT FILE] [INPUT BUCK] 
-			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_mask.nii.gz
 			3dmerge \
 			-dxyz=1 \
 			-1clust_order 1.75 50 \
-			-2thresh -0.16 0.16 \
+			-2thresh -0.20 0.20 \
 			-1dindex 0 -1tindex 0 \
-			-prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz \
+			-prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_mask.nii.gz \
 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz.nii.gz
 
-			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_reportBW_visCtxOnly.txt
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_report_1mmCrosson3roiOnly.txt
 			${bwDir}/clusterReporter.sh \
-			-m ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_maskBW.nii.gz \
-			-o ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.16thresh.50ul_reportBW_visCtxOnly.txt \
-			-a 1mmCrosson2roiVisOnly
+			-m ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_mask.nii.gz \
+			-o ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_report_1mmCrosson3roiOnly.txt \
+			-a 1mmCrosson3roiOnly
 
 			echo ""
 			echo ""

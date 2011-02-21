@@ -180,7 +180,7 @@ fi
 
 # the following requires echo $var, not just $var for ws-sep'd values in $var to be subsequently read as multiple values instead of single value containing ws"
 for image in `echo ${integerVolumes}`; do
-	#echo "DEBUG: integerVolumes=${integerVolumes}"
+	#echo "DEBUG: return to validate integerVolume ${image}"
 	#read
 	if [ ! -z ${image} ]; then
 		fxnValidateImages ${image}
@@ -295,7 +295,7 @@ fi
 for image in `echo ${integerVolumes} ${decimalVolumes}`; do
         if [ -s "`echo ${image}`" ]; then
                 imageBasename="`echo ${image} | xargs basename | xargs ${FSLDIR}/bin/remove_ext`"
-                #echo "DEBUG imageBasename is ${imageBasename}"
+                #echo "DEBUG: 3dresampling imageBasename ${imageBasename}"
 		3dresample \
 		-orient rpi \
 		-prefix ${tempDir}/${imageBasename}.nii.gz \
@@ -383,7 +383,6 @@ echo ""
 echo "nonlinear transformation of t1 to template takes about 15 minutes..."
 echo "(ignore messages about requested tolerance...unless your transformation turns out horrible, in which case they may have been meaningful)"
 echo ""
-# include -inmask if we have a lesion, don't if we don't: 
 if [ -s "`echo ${lesion}`" ]; then
 	fnirt \
 	     --in=${tempDir}/${blind}_t1 \
@@ -544,7 +543,7 @@ cp ${tempDir}/*.mat ${outDir}/
 # ------------------------- START: say bye and restore environment ------------------------- #
 
 rm -f ${tempDir}/inputUnformatted.txt
-rm -fr ${tempDir}
+#rm -fr ${tempDir}
 #echo ${tempDir}
 #ls -ltr ${tempDir}
 echo ""
