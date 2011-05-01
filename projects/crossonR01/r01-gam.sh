@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-# LOCATION: 	  ~stowler/scripts/stowler-r01-gam.sh
+# LOCATION: 	  ~stowler/scripts/stowler-r01-gam-post3mo.sh
 # USAGE:          (see fxnPrintUsage() below)
 #
 # CREATED:	  201008?? by stowler@ufl.edu
-# LAST UPDATED:	  20101004 by stowler@ufl.edu
+# LAST UPDATED:	  20110121 by stowler@ufl.edu
 #
 # DESCRIPTION:
 # Entire r01 gamma variate processing pipeline.
@@ -27,58 +27,16 @@ source $bwDir/utilitiesAndData/brainwhereCommonFunctions.sh
 fxnPrintUsage() {
    #EDITME: customize for each script:
    echo >&2 "$0 - a script to process r01 INT2 data"
-   echo >&2 "Usage: $0 [-s] [-g] [-p] [-c] [subjectID]"
+   echo >&2 "Usage: $0 [-s] [-g] [-p] [-c] -b <blindNumber> -t <session>"
    echo >&2 "  -s   screen input files"
    echo >&2 "  -g   gather input files"
    echo >&2 "  -p   process input files into 1mmMNI152-registered cluster maps"
    echo >&2 "  -c   generate cluster reports"
-   echo >&2 "(subjectIDs pulled from script if not specified on the commandline)"
+   echo >&2 "  -b   blindNumber (e.g. INT2_s01)"
+   echo >&2 "  -t   session (pre, post, or 3mo)"
 }
 
 
-fxnParseBlindList() {
-
-	if [ -z "`echo $@`" ]; then
-		# 14 participants with pre, post, and 3mo:
-		#	blindNumList="s01 s03 s04 s06 s07 s08 s10 s11 s12 s13 s14 s15 s16 s19"
-		#	blindList="INT2_s01 INT2_s03 INT2_s04 INT2_s06 INT2_s07 INT2_s08 INT2_s10 INT2_s11 INT2_s12 INT2_s13 INT2_s14 INT2_s15 INT2_s16 INT2_s19"
-		#	return to these for pre processing:
-		#	blindNumList="s01 s02 s04 s05 s06 s07 s08 s10 s11 s12 s13 s14 s15 s16 s17 s19"
-		#	blindList="INT2_s01 INT2_s02 INT2_s04 INT2_s05 INT2_s06 INT2_s07 INT2_s08 INT2_s10 INT2_s11 INT2_s12 INT2_s13 INT2_s14 INT2_s15 INT2_s16 INT2_s17 INT2_s19"
-			blindNumList="s01 s02 s04 s05 s08 s10 s11 s12 s13 s14 s15 s16 s17 s19"
-			blindList="INT2_s01 INT2_s02 INT2_s04 INT2_s05 INT2_s06 INT2_s07 INT2_s08 INT2_s10 INT2_s11 INT2_s12 INT2_s13 INT2_s14 INT2_s15 INT2_s16 INT2_s17 INT2_s19"
-
-		# 4 of those 14 pre/post/3mo participants appear to be pristine:
-		#	blindNumList="s04 s11 s16 s19"
-		#	blindList="INT2_s04 INT2_s11 INT2_s16 INT2_s19"
-
-		# lesion naming problems: s07, s08, s10
-		#  cp INT2_s10_pre_lesion_RPI.nii.gz INT2_s10_lesion.nii.gz
-
-		#TBD: 20 has no lesion
-
-		#TBD:  oblique problems:
-		#		s03: lesion, pre.3danat+orig, pre.epi+orig
-		#		s06: post.3danat+orig, post.epi+orig
-
-		# was  missing post.stim.buck+orig for s01. Candidates:
-		#	/data/birc/RESEARCH/RO1/SUBJECTS/INT2/INT2_s01/post/afnifiles/INT2_s01_post.stim_all.buck+orig.HEAD
-		#	/data/birc/RESEARCH/RO1/SUBJECTS/INT2/INT2_s01/post/afnifiles/INT2_s01_post.stim_12346.buck+orig.HEAD
-		#  3dcopy INT2_s01_post.stim_all.buck INT2_s01_post.stim.buck
-
-		#TBD: missing post.stim.buck+orig for s12
-
-		#TBD: missing 3mo.allresp.buck+orig for s13
-		#TBD: missing 3mo.allresp.buck+orig for s14
-		#TBD: missing 3mo.allresp.buck+orig for s15
-
-		#TBD:  missing pre.stim.buck+orig for s06
-
-		#TBD: s03 didn't correctly 3dresample to RPI
-	else 
-		blindList="$@"
-	fi
-}
 # ------------------------- FINISHED: fxn definitions ------------------------- #
 
 
@@ -98,67 +56,9 @@ scriptPID="$$"				            # ...assign a constant here if not calling from a 
 scriptUser=`whoami`			         # ...used in file and dir names
 startDate=`date +%Y%m%d` 		      # ...used in file and dir names
 startDateTime=`date +%Y%m%d%H%M%S`	# ...used in file and dir names
-#cdMountPoint
-
-
-
 
 studyDir="/data/birc/RESEARCH/RO1/SUBJECTS/INT2"
 
-: <<'COMMENTBLOCK'
-   # third: variables for filesystem locations, filenames, long arguments, etc.
-   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-   intensity="t1bfc0"			         # ...to be used in file and folder names
-   orientation="radOrig"			      # ...ditto
-
-   # set image directories:
-
-   # ${blindParent}:
-   # parent dir where each subject's $blindDir reside (e.g. parent of blind1, blind2, etc.)
-   # e.g. blindParent="/home/leonardlab/images/ucr"
-   # e.g. allows mkdir ${blindParent}/importedSemiautoLatvens ${blindParent}/blind1
-
-   # ${blindDir}: 
-   # dir for each subject's images and image directories:
-   # e.g. blindDir="/home/leonardlab/images/ucr/${blind}"
-   # e.g. blindDir="${blindParent}/${blind}"
-
-   # ${origDir}: 
-   # dir or parent dir where original images will be stored (or are already stored if formatted)
-   # e.g. origDir="${blindDir}/acqVolumes"
-
-   # ${anatRoot}}:
-   # where the groomed images directory, among others, will live:
-   # e.g. anatRoot="${blindDir}/anat-${intensity}-${orientation}"
-
-   # ...source directories for input images:
-   # (script should copy images from these [probably poorly organized] source directories
-   # to $origDir
-   # e.g. sourceT1acqDir="/Users/Shared/cepRedux/acqVolumes"
-   # e.g. sourceLatvenDir="/Users/Shared/cepRedux/semiautoLatvens"
-   # e.g. sourceBrainDir="/Users/Shared/cepRedux/semiautoExtractedBrains"
-   # e.g. sourceFlairDir="/Users/Shared/libon-final/origOrientImageJ" 
-   # e.g. sourceWMHImaskDir="/Users/Shared/libon-final/masksOrientImageJ"  
-
-   # ...brainsuite09 paths and definitions:
-   #BSTPATH="/data/pricelab/scripts/sdt/brainsuite09/brainsuite09.x86_64-redhat-linux-gnu"
-   #BSTPATH="/Users/stowler/Downloads/brainsuite09.i386-apple-darwin9.0"
-   #export BSTPATH
-   #bstBin="${BSTPATH}/bin/"
-   #export bstBin
-   #ATLAS="${BSTPATH}/atlas/brainsuite.icbm452.lpi.v08a.img"
-   #export ATLAS
-   #ATLASLABELS="${BSTPATH}/atlas/brainsuite.icbm452.lpi.v09e3.label.img"
-   #export ATLASLABELS
-   #ATLASES="--atlas ${ATLAS} --atlaslabels ${ATLASLABELS}"
-   #export ATLASES
-
-   # ...FSL variables
-   # FSLDIR=""
-   # export FSLDIR
-   # FSLOUTPUTTYPEorig="${FSLOUTPUTTYPE}"
-   # export FSLOUTPUTTYPE=NIFTI_GZ
-COMMENTBLOCK
 
 # ------------------------- FINISHED: definitions and constants ------------------------- #
 
@@ -169,21 +69,24 @@ COMMENTBLOCK
 # check for number of arguments
 if [ $# -lt 1 ] ; then
    echo ""
-   #echo "ERROR: no subject numbers specified specified"
-   #echo ""
    fxnPrintUsage
    echo ""
    exit 1
 fi
+
+# store for later reference
+allArgs="$@"
 
 # initialization of variables that receive values during argument processing:
 screen=0
 gather=0
 process=0
 generateClusterReport=0
+blindList=0
+sessionRequested=0
 
 # use getopt to process arguments:
-set -- `getopt sgpc "$@"`
+set -- `getopt sgpcb:t: "$@"`
 [ $# -lt 1 ] && exit 1	# getopt failed
 while [ $# -gt 0 ]
 do
@@ -196,6 +99,10 @@ do
             ;;
       -c)   generateClusterReport=1
             ;;
+      -b)   blindList="${2}"; shift
+            ;; 
+      -t)   sessionRequested="${2}"; shift
+            ;;
       --)	shift; break
             ;;
       -*)   fxnPrintUsage; exit 1
@@ -205,18 +112,7 @@ do
     esac
     shift
 done
-# now all command line switches have been processed, and "$@" contains all blind numbers
-fxnParseBlindList $@
 
-# check for incompatible invocation options:
-#if [ "$headingsoff" != "0" ] && [ "$headingsonly" != "0" ] ; then
-#   echo ""
-#   echo "ERROR: cannot specify both -r and -n:"
-#   echo ""
-#   fxnPrintUsage
-#   echo ""
-#   exit 1
-#fi
 
 # ------------------------- FINISHED: invocation ------------------------- #
 
@@ -226,7 +122,7 @@ fxnParseBlindList $@
 echo ""
 echo ""
 echo "#################################################################"
-echo "START: \"${scriptName} ${1}\""
+echo "START: \"${scriptName} ${allArgs}\""
       date
 echo "#################################################################"
 echo ""
@@ -238,11 +134,12 @@ echo ""
 # ------------------------- START: body of program ------------------------- #
 
 fxnSetTempDir                 # setup and create $tempDir if necessary
-#fxnValidateImages $@     # verify that all input images are actually images
 # TBD: Verify that destination directories exist and are user-writable:
-#outDir="${HOME}/r01preOnlyBW"
-outDir=/data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma
+#outDir="${HOME}/r01postOnlyBW"
+outDir="/data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma12omniTest"
 mkdir -p ${outDir}
+
+echo "DEBUG: blindList=${blindList}"
 
 if [ $screen -eq 1 ]; then
 	echo ""
@@ -282,8 +179,6 @@ if [ $screen -eq 1 ]; then
 	######	done
 
 
-
-
 	######echo ""
 	######echo ""
 	######echo "Screening stim files:"
@@ -303,11 +198,9 @@ if [ $screen -eq 1 ]; then
 	######done
 
 
-
 	echo ""
 	echo ""
 	echo "Screening lesions:"
-	echo ""
 	#fixed: mv INT2_s04_lesion.nii.gz INT2_s04_lesion_RPI.nii.gz && 3dresample -orient rpi -prefix INT2_s04_lesion.nii.gz -inset INT2_s04_lesion_LPI.nii.gz
 	#fixed: INT2_s01_lesion.nii.gz INT2_s01_lesion_LPI.nii.gz  &&  3dresample -orient RPI -prefix INT2_s01_lesion.nii.gz -inset INT2_s01_lesion_LPI.nii.gz
 	#fixed:  mv INT2_s02_lesion.nii.gz INT2_s02_lesion_LPI.nii.gz && 3dresample -orient RPI -prefix INT2_s02_lesion.nii.gz -inset INT2_s02_lesion_LPI.nii.gz
@@ -315,22 +208,20 @@ if [ $screen -eq 1 ]; then
 	for blind in `echo ${blindList}`; do
 		fxnValidateImages /data/home/stowler/lesionAttempt0/${blind}_lesion.nii.gz
 	done
-		lesionList=""
+	lesionList=""
 	for blind in `echo ${blindList}`; do
 		lesionList="${lesionList} /data/home/stowler/lesionAttempt0/${blind}_lesion.nii.gz"
 	done
 	sh ${bwDir}/displayImageGeometry.sh "${lesionList}"
 
 
-
 	echo ""
 	echo ""
 	echo "Screening anatomics:"
-	echo ""
 	#fixed: mv INT2_s04_T1.nii.gz INT2_s04_T1_LPI.nii.gz && 3dresample -orient rpi -prefix INT2_s04_T1.nii.gz -inset INT2_s04_T1_LPI.nii.gz
 	anatomicList=""
 	for blind in `echo ${blindList}`; do
-		for session in pre; do
+		for session in `echo ${sessionRequested}`; do
 			#fxnValidateImages /data/home/stowler/lesionAttempt0/${blind}_T1.nii.gz
 			fxnValidateImages ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.3danat+orig.HEAD
 			anatomicList="${anatomicList} ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.3danat+orig.HEAD"
@@ -339,14 +230,37 @@ if [ $screen -eq 1 ]; then
 	sh ${bwDir}/displayImageGeometry.sh "${anatomicList}"
 
 
+	# TBD: wrap in if statemet so only happens if session = post or 3mo
+	if [ "${session}" = "post" ] || [ "${session}" = "3mo" ]; then 
+		echo "DEBUG session is post or 3mo!!! continue?"
+		echo "DEBUG: disabling all read statements until I test for interactivity"
+		# read
+		echo ""
+		echo ""
+		echo "Screening PRE session anatomics needed for coregistration to lesion:"
+		#fixed: mv INT2_s04_T1.nii.gz INT2_s04_T1_LPI.nii.gz && 3dresample -orient rpi -prefix INT2_s04_T1.nii.gz -inset INT2_s04_T1_LPI.nii.gz
+		anatomicPreList=""
+		for blind in `echo ${blindList}`; do
+			for session in `echo ${sessionRequested}`; do
+				#fxnValidateImages /data/home/stowler/lesionAttempt0/${blind}_T1.nii.gz
+				#fxnValidateImages /data/home/stowler/r01preOnly/${blind}/pre/afnifiles/${blind}_${session}_t1.nii.gz
+				fxnValidateImages /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/pre/afnifiles/${blind}_pre_t1.nii.gz
+				#fxnValidateImages /data/home/stowler/r01preOnly/${blind}/pre/afnifiles/${blind}_${session}_t1_brain.nii.gz
+				fxnValidateImages /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/pre/afnifiles/${blind}_pre_t1_brain.nii.gz
+				anatomicPreList="${anatomicPreList} /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/pre/afnifiles/${blind}_pre_t1.nii.gz /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/pre/afnifiles/${blind}_pre_t1_brain.nii.gz"
+			done
+		done
+		sh ${bwDir}/displayImageGeometry.sh "${anatomicPreList}"
+	fi
+
+
 	
 	echo ""
 	echo ""
 	echo "Screening EPI volumes:"
-	echo ""
 	epiList=""
 	for blind in `echo ${blindList}`; do
-		for session in pre ; do
+		for session in `echo ${sessionRequested}`; do
 			fxnValidateImages ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.epi+orig.HEAD
 			epiList="${epiList} ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.epi+orig.HEAD"
 		done
@@ -358,11 +272,10 @@ if [ $screen -eq 1 ]; then
 	echo ""
 	echo ""
 	echo "Screening buck and resp files to which we may apply gamma thresholding:"
-	echo ""
 	buckList=""
 	respList=""
 	for blind in `echo ${blindList}`; do
-		for session in pre ; do
+		for session in `echo ${sessionRequested}`; do
 			for condition in stim allresp; do 
 				fxnValidateImages ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.${condition}.buck+orig.HEAD
 				fxnValidateImages ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.${condition}.resp+orig.HEAD
@@ -375,10 +288,11 @@ if [ $screen -eq 1 ]; then
 	sh ${bwDir}/displayImageGeometry.sh "${respList}"
 
 	
-	
+	# TBD: allow for non-interactive switch that will skip this
 	echo ""
 	echo -n "If happy with screening, hit Return to continue or CTRL-C to quit."
-	read
+	echo "DEBUG: disabling all read statements until I test for interactivity"
+	#read
 
 
 	echo ""
@@ -406,14 +320,18 @@ if [ $gather -eq 1 ]; then
         echo ""
         echo ""
 
-        #echo "OK to rm -fr $outDir ? (return to continue, ctrl-c if not ok)"
+	echo "DEBUG EXISTING DIR: ls -ltr ${outDir}/${blind}/${session}/afnifiles:"
+	echo ""
+	ls -ltr ${outDir}/${blind}/${session}/afnifiles:
+        echo "OK to rm -fr ${outDir}/${blind}/${session}/afnifiles ? (return to continue, ctrl-c if not ok)"
+	echo "DEBUG: disabling all read statements until I test for interactivity"
         #read
-        #rm -fr ${outDir}
+        rm -fr ${outDir}/${blind}/${session}/afnifiles
 
 
 	# create directories:
         for blind in ${blindList}; do
-		for session in pre ; do
+		for session in `echo ${sessionRequested}`; do
 			mkdir -p ${outDir}/${blind}/${session}/afnifiles
 		done # end of session loop
         done # end of blind loop
@@ -425,7 +343,7 @@ if [ $gather -eq 1 ]; then
         echo ""
         t1list=""
         for blind in ${blindList}; do
-		for session in pre ; do
+		for session in `echo ${sessionRequested}`; do
 			3dresample -orient RPI -prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz -inset ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.3danat+orig.HEAD
 			ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz
 			t1list="${t1list} ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz"
@@ -440,7 +358,7 @@ if [ $gather -eq 1 ]; then
         echo ""
         epiList=""
         for blind in ${blindList}; do
-		for session in pre ; do
+		for session in `echo ${sessionRequested}`; do
 			3dresample -orient RPI -prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi.nii.gz -inset ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.epi+orig.HEAD
 			ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi.nii.gz
 			epiList="${epiList} ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi.nii.gz"
@@ -459,7 +377,7 @@ if [ $gather -eq 1 ]; then
 	rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_${condition}.buck*
 	rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_${condition}.buck.nii.gz
 	for blind in ${blindList}; do
-		for session in pre ; do
+		for session in `echo ${sessionRequested}`; do
 			for condition in stim allresp; do
 				3dresample -orient RPI -prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_${condition}.resp -inset ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.${condition}.resp+orig.HEAD
 				3dresample -orient RPI -prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_${condition}.buck -inset ${studyDir}/${blind}/${session}/afnifiles/${blind}_${session}.${condition}.buck+orig.HEAD
@@ -498,10 +416,61 @@ fi
 
 if [ $process -eq 1 ]; then
 	for blind in ${blindList}; do
-		for session in pre ; do
+		for session in `echo ${sessionRequested}`; do
+			# TBD: have I verified that sessions can only equal pre, post, or 3mo from user?
+			if [ "${session}" = "post" ] || [ "${session}" = "3mo" ]; then
+			# TBD: wrap in test for session == post or 3mo
+			##################### between these lines is unique to post and 3mo #################################
+				mv -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_REALorig.nii.gz
+				# ================================================================= #
+				# skull-strip and register to the pre T1 which is aligned with the lesion:
+				echo ""
+				echo ""
+				echo "Skull-striping original T1 for registration to pre T1..."
+				echo ""
+				rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_REALorig_brain.nii.gz
+				bet ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_REALorig.nii.gz ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_REALorig_brain.nii.gz -R -v
+				echo ""
+				echo "...done:"
+				ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_REALorig_brain.*
+				echo ""
+				echo ""
 
+				echo ""
+				echo ""
+				echo "Linear transformation of extracted T1 to pre session's extracted T1 takes about two minutes..."
+				# TBD EDITME: the path and name of extracted pre session T1 may change and need updating here:
+				rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_2preT1_affine_transf.mat
+				flirt \
+				     -in ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_REALorig_brain.nii.gz \
+				     -ref /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/pre/afnifiles/${blind}_pre_t1_brain.nii.gz \
+				     -omat ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_2preT1_affine_transf.mat
+				echo "...done:"
+				ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_2preT1_affine_transf.mat
+
+				echo ""
+				echo ""
+				echo "Applying extracted T1 transformation matrix to unextracted T1:"
+				# EDITME: the path and name of unextracted pre session T1 may change and need updating here:
+				rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz
+				flirt \
+					-in ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_REALorig.nii.gz \
+					-ref /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/pre/afnifiles/${blind}_pre_t1.nii.gz \
+					-applyxfm -init ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_2preT1_affine_transf.mat \
+					-out ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz
+				echo "...done:"
+				ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz
+			##################### between these lines is unique to post and 3mo #################################
+			# else this is pre and just needs this to prep for registerTo1mmMNI152.sh:
+			else
+				mv ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz
+			fi
+				
 			# skull-strip, then register T1 to 1mmMNI152 space (will handle EPI on own):
-			mv ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_t1.nii.gz 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_t1_brain.nii.gz 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_brain.nii.gz
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_t1_warped.nii.gz 		${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_warped.nii.gz
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_t1_brain_warped.nii.gz 		${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_brain_warped.nii.gz
 			sh ${bwDir}/registerTo1mmMNI152.sh \
 			-s ${blind} \
 			-t ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz \
@@ -638,7 +607,7 @@ fi
 
 if [ $generateClusterReport -eq 1 ]; then
 	for blind in ${blindList}; do
-		for session in pre ; do
+		for session in `echo ${sessionRequested}`; do
 			echo ""
 			echo ""
 			echo "================================================================="
@@ -671,20 +640,21 @@ if [ $generateClusterReport -eq 1 ]; then
 			#
 			# the equilavalent of 3dclust -1Dformat -nosum -1dindex 0 -1tindex 0 -2thresh -0.16 0.16 -dxyz=1 1.75 50 [INPUT BUCK]
 			# .....is 3dmerge -dxyz=1 -1clust_order 1.75 50 -2thresh -0.16 0.16 -1dindex 0 -1tindex 0 -prefix [OUTPUT FILE] [INPUT BUCK] 
-			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_mask.nii.gz
+			# TBD: testing at 100 ul instead of 50 ul
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_maskBW.nii.gz
 			3dmerge \
 			-dxyz=1 \
-			-1clust_order 1.75 50 \
-			-2thresh -0.20 0.20 \
+			-1clust_order 1.75 100 \
+			-2thresh -0.12 0.12 \
 			-1dindex 0 -1tindex 0 \
-			-prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_mask.nii.gz \
+			-prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_maskBW.nii.gz \
 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz.nii.gz
 
-			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_report_1mmCrosson3roiOnly.txt
-			${bwDir}/clusterReporter.sh \
-			-m ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_mask.nii.gz \
-			-o ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.thresh20.50ul_report_1mmCrosson3roiOnly.txt \
-			-a 1mmCrosson3roiOnly
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer2Only.txt
+			${bwDir}/clusterReporterTemp.sh \
+                        -m ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_maskBW.nii.gz \
+                        -o ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer2Only.txt \
+                        -a 1mmCrosson3roiVer2Only
 
 			echo ""
 			echo ""
@@ -706,7 +676,7 @@ fi
 rm -fr ${tempDir}
 echo ""
 echo "#################################################################"
-echo "FINISHED: \"${scriptName} ${1}\""
+echo "FINISHED: \"${scriptName} ${allArgs}\""
       date
 echo "#################################################################"
 echo ""

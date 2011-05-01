@@ -71,6 +71,7 @@ fxnPrintUsage() {
    echo >&2 "  1mmHarvardOxfordCortical        48 regions, as distributed with FSL"
    echo >&2 "  1mmHarvardOxfordSubcortical     21 regions, as distributed with FSL"
    echo >&2 "  1mmCrosson3roiOnly              3 custom regions: posterior perisylvian, lateral frontal, medial frontal"
+   echo >&2 "  1mmCrosson3roiVer2Only          3 custom regions: posterior perisylvian, lateral frontal, medial frontal"
    echo >&2 "  1mmCrosson3roi                  3 custom regions as above, surrounded by remaining 34 regions from original 48-region mask"
    echo >&2 "  1mmCrosson2roiVisOnly           2 regions from Harvard Oxford cortical: occipital pole and intracalcarine cortex"
    echo >&2 ""
@@ -263,14 +264,28 @@ if [ ${intensityVolumeNotSpecified} -eq 0 ]; then
 	echo "Geometry of your provided clusterMask and intensityVolume must match: "
 	echo ""
 	sh ${bwDir}/displayImageGeometry.sh ${clusterMask} ${intensityVolume}
-	echo "Continue?"
-	read
+	#echo "Continue?"
+	#read
 fi
 
 
 fxnSetTempDir
+#tempDir=/home/stowler/temp/shortFix
 mkdir -p ${tempDir}/atlasMask
 mkdir -p ${tempDir}/clusterMask
+
+# TBD: find longer term solution....long clusterMask names are creating errors, so copying 
+echo "DEBUG: tempDir=${tempDir}"
+echo "DEBUG: clusterMask=${clusterMask}"
+echo "DEBUG imcping clusterMask to shortername"
+${FSLDIR}/bin/imcp ${clusterMask} ${tempDir}/clusterMaskShortName
+clusterMask="${tempDir}/clusterMaskShortName"
+echo "DEBUG: new clusterMask is ${clusterMask}"
+ls -ltr ${clusterMask}*
+echo "DEBUG"
+#echo "DEBUG continue?? (ctrl-c to quit)"
+#read
+
 
 echo ""
 echo "calling augmentAndSplitAtlas.sh to augment and split the canonical atlas"
@@ -280,13 +295,14 @@ sh ${bwDir}/utilitiesAndData/augmentAndSplitAtlas.sh ${standardParent}/${atlasNa
 echo ""
 echo "calling augmentAndSplitAtlas.sh to augment and split the user-specified cluster mask (${clusterMask})"
 # augment and split the cluster mask:
-sh ${bwDir}/utilitiesAndData/augmentAndSplitAtlas.sh ${clusterMask} ${tempDir}/clusterMask
+sh ${bwDir}/utilitiesAndData/augmentAndSplitAtlas.sh ${clusterMask}.nii.gz ${tempDir}/clusterMask
 
 
 # loop through main program loop twice: first to create per-atlasMask-region rows and per-clusterMask-region subrows, and then the other way around
 mainLoopCounter=0
 
-while [ $mainLoopCounter -lt 2 ]; do
+# TBD verify the clusterMask table (table 2) and return to output by changing while condition back to [ $mainLoopCounter -lt 2 ]
+while [ $mainLoopCounter -lt 1 ]; do
    # originally script had atlasMask hard coded as the row (outer) loop, and clusterMask hard coded at the subrow (inner) loop. Introduced the $rowMask and $subrowMask syntax and this outerloop as a way to re-run with clusterMask as row (outer) loop.
    # firt time through the main loop: outerLoop (report row) is atlas, and innerLoop (subrows) is cluster mask. Second time through they are reversed
    if [ $mainLoopCounter -eq 0 ]; then 
@@ -310,10 +326,10 @@ while [ $mainLoopCounter -lt 2 ]; do
    # these labels_*.txt files are either copied from their existent originals in ${standardParent}, or are created by augmentAndSplitAtlas.sh if they didn't already exist
    rowMaskName=`ls ${tempDir}/${rowMask}/labels_*.txt | xargs basename | sed 's/labels_//' | sed 's/\.txt//' `
    subrowMaskName=`ls ${tempDir}/${subrowMask}/labels_*.txt | xargs basename | sed 's/labels_//' | sed 's/\.txt//' `
-   #DEBUG echo "DEBUG: rowMaskName=$rowMaskName"
-   #DEBUG echo "DEBUG: subrowMaskName=$subrowMaskName"
-   #DEBUG echo "DEBUG: hit return to continue with stowler-clusterReport.sh $1"
-   #DEBUG read
+   echo "DEBUG: rowMaskName=$rowMaskName"
+   echo "DEBUG: subrowMaskName=${subrowMaskName}"
+   #echo "DEBUG: hit return to continue with stowler-clusterReport.sh $1"
+   #read
 
 
    # for each rowMask region (which will become output rows)...
@@ -324,6 +340,8 @@ while [ $mainLoopCounter -lt 2 ]; do
            rowRegionName="_${rowMaskName}+${rowRegionIntensity}-${rowRegionLabel}"
            echo "Analyzing rowRegion ${rowRegionName}..."
            # calc total vol of activation in rowMaskRegion:
+
+		 # TBD: looks like long paths may be creating errors, so CD'ing in and out
                  fslmaths -dt float \
                      ${tempDir}/${rowMask}/intensityBin/${rowRegionName}_BH \
                      -mul ${tempDir}/${subrowMask}/${subrowMaskName} \
@@ -332,6 +350,23 @@ while [ $mainLoopCounter -lt 2 ]; do
                      -odt char
                  rowRegion_subrowMask_tot_BH_mm3=`fslstats ${tempDir}/${rowMask}/intensityBin/intersection_${rowRegionName}_BH-AND-${subrowMaskName} -V | awk '{print $1}'`
                  echo "rowRegion_subrowMask_tot_BH_mm3 = $rowRegion_subrowMask_tot_BH_mm3"
+
+		 # temporarily aborted attempt to fix errors related to too-long path names
+		 # mkdir ${tempDir}/safeMul
+		 # imcp ${tempDir}/${rowMask}/intensityBin/${rowRegionName}_BH ${tempDir}/safeMul/
+		 # imcp ${tempDir}/${subrowMask}/${subrowMaskName} ${tempDir}/safeMul/
+		 # cd ${tempDir}/safeMul
+                 # fslmaths -dt float \
+                 #     ${rowRegionName}_BH \
+                 #     -mul ${subrowMaskName} \
+                 #     -bin \
+		 #     intersectionImage \
+		 #     -odt char
+                 # rowRegion_subrowMask_tot_BH_mm3=`fslstats intersectionImage -V | awk '{print $1}'`
+                 # echo "rowRegion_subrowMask_tot_BH_mm3 = $rowRegion_subrowMask_tot_BH_mm3"
+		 # imcp intersectionImage ${tempDir}/${rowMask}/intensityBin/intersection_${rowRegionName}_BH-AND-${subrowMaskName}
+		 # rm -f ${tempDir}/safeMul/*
+		 # cd -
            # calc total vol of activation in rowRegion_subrowMask_BH_mm3 that fall outside of the brain
                  fslmaths -dt float \
                      ${tempDir}/${rowMask}/intensityBin/intersection_${rowRegionName}_BH-AND-${subrowMaskName} \
@@ -471,7 +506,7 @@ done # done with main loop controlled by mainLoopCounter
 
 
 # output report to screen for excel import, and to $outFile (notice end of EVERY line here):
-   echo "# CLUSTER REPORT for ${$clusterMask}" | tee -a ${outFile}
+   echo "# CLUSTER REPORT for ${clusterMask}" | tee -a ${outFile}
    echo "# overall laterality index (L-R)/(L+R) for Crosson regions of interest: ${lateralityIndexTotal_atlasMask}" | tee -a ${outFile}
    echo "# (one line of column headings followed by one row per row region for import into excel):" | tee -a ${outFile}
    echo "# (rows sorted from row region with greatest volume of activation to row region with least volume of activation)" | tee -a ${outFile}
@@ -482,12 +517,13 @@ done # done with main loop controlled by mainLoopCounter
    echo "" | tee -a ${outFile}
    echo "" | tee -a ${outFile}
    echo "" | tee -a ${outFile}
-   echo "(following rows formatted as above, but each row represents a cluster in the clusterMask input by the user" | tee -a ${outFile}
-   echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH" | tee -a ${outFile}
-   cat ${tempDir}/rowRegionLocalizationStrings_clusterMask.txt | column -t | tee -a ${outFile}
-   echo "" | tee -a ${outFile}
-   echo "" | tee -a ${outFile}
-   echo "" | tee -a ${outFile}
+   # TBD: put these back in after troubleshooting table2
+   #echo "(following rows formatted as above, but each row represents a cluster in the clusterMask input by the user" | tee -a ${outFile}
+   #echo "MASK.INTENSITY.VALUE REGION.LABEL MICROLITERS.TOTAL %.OUTSIDE.OF.STANDARD.BRAIN MICROLITERS.LEFT.HEM MICROLITERS.RIGHT.HEM LATERALITY.INDEX COMPOSITION.OF.REGION.IN.LH MIN.INTENSITY.LH MAX.INTENSITY.LH MIN.INTENSITY.XYZ.LH MAX.INTENSITY.XYZ.LH COMPOSITION.OF.REGION.IN.RH MIN.INTENSITY.RH MAX.INTENSITY.RH MIN.INTENSITY.XYZ.RH MAX.INTENSITY.XYZ.RH" | tee -a ${outFile}
+   #cat ${tempDir}/rowRegionLocalizationStrings_clusterMask.txt | column -t | tee -a ${outFile}
+   #echo "" | tee -a ${outFile}
+   #echo "" | tee -a ${outFile}
+   #echo "" | tee -a ${outFile}
    # TBD: just kill the extra columns if an intensity mask wasn't provided?
 
 echo ""

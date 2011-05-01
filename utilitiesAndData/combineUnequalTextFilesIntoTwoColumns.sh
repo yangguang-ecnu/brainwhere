@@ -225,7 +225,7 @@ for longerCounter in `seq 1 $longerFileCleanLineCount`; do
 done
 
 column -t ${tempDir}/unformattedOutput.txt
-
+rm -fr ${tempDir}
 
 #echo ""
 #echo ""

@@ -544,7 +544,7 @@ cp ${tempDir}/*.mat ${outDir}/
 # ------------------------- START: say bye and restore environment ------------------------- #
 
 rm -f ${tempDir}/inputUnformatted.txt
-#rm -fr ${tempDir}
+rm -fr ${tempDir}
 #echo ${tempDir}
 #ls -ltr ${tempDir}
 echo ""
