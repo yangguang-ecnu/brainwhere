@@ -136,7 +136,7 @@ echo ""
 fxnSetTempDir                 # setup and create $tempDir if necessary
 # TBD: Verify that destination directories exist and are user-writable:
 #outDir="${HOME}/r01postOnlyBW"
-outDir="/data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma12omniTest"
+outDir="/data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma12omniRefweight"
 mkdir -p ${outDir}
 
 echo "DEBUG: blindList=${blindList}"
@@ -333,8 +333,8 @@ if [ $gather -eq 1 ]; then
         for blind in ${blindList}; do
 		for session in `echo ${sessionRequested}`; do
 			mkdir -p ${outDir}/${blind}/${session}/afnifiles
-		done # end of session loop
-        done # end of blind loop
+		done 
+        done 
 
 
         echo ""
@@ -461,7 +461,7 @@ if [ $process -eq 1 ]; then
 				echo "...done:"
 				ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz
 			##################### between these lines is unique to post and 3mo #################################
-			# else this is pre and just needs this to prep for registerTo1mmMNI152.sh:
+			# else this is pre and just needs this command to prep for registerTo1mmMNI152.sh:
 			else
 				mv ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1.nii.gz ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_orig.nii.gz
 			fi
@@ -504,14 +504,14 @@ if [ $process -eq 1 ]; then
 			echo ""
 			echo ""
 			echo "calculation of linear EPI transformation takes about two minutes..."
-			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_funct2struct.mat
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_func2struct.mat
 			flirt \
 				-ref ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_brain \
 				-in ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi \
 				-dof 7 \
-				-omat  ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_funct2struct.mat
+				-omat  ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_func2struct.mat
 			echo "...done:"
-			ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_funct2struct.mat
+			ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_func2struct.mat
 			echo ""
 			echo "" 
 
@@ -581,12 +581,30 @@ if [ $process -eq 1 ]; then
 			     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
 			     --in=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.nii.gz \
 			     --warp=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_nonlinear_transf.nii.gz \
-			     --premat=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_funct2struct.mat \
+			     --premat=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_func2struct.mat \
 			     --out=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz
 
 			ls -l ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped*
 			sh ${bwDir}/displayImageGeometry.sh ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped*
 
+			# ...and as a way to visually verify quality of EPI transformation, create a 3D "average" EPI volume for the session, and apply same registrations to it.
+			# The func2struct and warped version of this will be used to visually verify quality of EPI transformations.
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi_averaged.nii.gz
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi_averaged_func2struct.nii.gz
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi_averaged_warped.nii.gz
+			fslmaths ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi.nii.gz -Tmean ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi_averaged.nii.gz
+			flirt \
+				-in ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi_averaged.nii.gz \
+				-ref ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_t1_brain.nii.gz \
+				-applyxfm -init ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_func2struct.mat \
+				-out ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi_averaged_func2struct.nii.gz
+			applywarp \
+			     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
+			     --in=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi_averaged.nii.gz \
+			     --warp=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_nonlinear_transf.nii.gz \
+			     --premat=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_func2struct.mat \
+			     --out=${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_epi_averaged_warped.nii.gz
+			
 			echo ""
 			echo ""
 			echo "================================================================="
@@ -651,7 +669,7 @@ if [ $generateClusterReport -eq 1 ]; then
 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz.nii.gz
 
 			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer2Only.txt
-			${bwDir}/clusterReporterTemp.sh \
+			${bwDir}/clusterReporter.sh \
                         -m ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_maskBW.nii.gz \
                         -o ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer2Only.txt \
                         -a 1mmCrosson3roiVer2Only

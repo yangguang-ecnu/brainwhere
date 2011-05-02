@@ -359,18 +359,20 @@ ls -l ${tempDir}/${blind}_affine_transf.mat
 
 # ================================================================= #
 # if epi is to be registered, here's linear registration of epi to t1_brain:
+# TBD: experimenting to try to get better func2struct registrations:
 if [ -s "`echo ${epi}`" ]; then
 	echo ""
 	echo ""
 	echo "Linear transformation of EPI takes about two minutes..."
 	flirt \
-	-ref ${tempDir}/${blind}_t1_brain \
+	-ref ${tempDir}/${blind}_t1 \
 	-in ${tempDir}/${blind}_epi \
-	-inweight ${tempDir}/${blind}_lesionInverted \
-	-dof 7 \
-	-omat ${tempDir}/${blind}_funct2struct.mat
+	-refweight ${tempDir}/${blind}_lesionInverted \
+	-dof 6 \
+	-cost mutualinfo \
+	-omat ${tempDir}/${blind}_func2struct.mat
 	echo "...done:"
-	ls -l ${tempDir}/${blind}_funct2struct.mat
+	ls -l ${tempDir}/${blind}_func2struct.mat
 	echo ""
 	echo ""
 fi
@@ -450,13 +452,13 @@ if [ -s "`echo ${epi}`" ]; then
 	#     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
 	#     --in=${tempDir}/${blind}_epi \
 	#     --warp=${tempDir}/${blind}_nonlinear_transf \
-	#     --premat=${tempDir}/${blind}_funct2struct.mat \
+	#     --premat=${tempDir}/${blind}_func2struct.mat \
 	#     --out=${tempDir}/${blind}_epi_warped
 	applywarp \
 		--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
 		--in=${tempDir}/${blind}_epi \
 		--warp=${tempDir}/${blind}_nonlinear_transf \
-		--premat=${tempDir}/${blind}_funct2struct.mat \
+		--premat=${tempDir}/${blind}_func2struct.mat \
 		--out=${tempDir}/${blind}_epi_warped \
 		-v 
 	ls -l ${tempDir}/${blind}_epi_warped*
@@ -475,7 +477,7 @@ for image in `echo ${integerVolumes}`; do
 		--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
 		--in=${tempDir}/${imageBasename} \
 		--warp=${tempDir}/${blind}_nonlinear_transf \
-		--premat=${tempDir}/${blind}_funct2struct.mat \
+		--premat=${tempDir}/${blind}_func2struct.mat \
 		--out=${tempDir}/${imageBasename}_warped.nii.gz \
 		--interp=nn
 		ls -l ${tempDir}/${imageBasename}_warped*
@@ -495,7 +497,7 @@ for image in `echo ${decimalVolumes}`; do
 		--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
 		--in=${tempDir}/${imageBasename} \
 		--warp=${tempDir}/${blind}_nonlinear_transf \
-		--premat=${tempDir}/${blind}_funct2struct.mat \
+		--premat=${tempDir}/${blind}_func2struct.mat \
 		--out=${tempDir}/${imageBasename}_warped.nii.gz \
 		--interp=sinc
 		ls -l ${tempDir}/${imageBasename}_warped*
