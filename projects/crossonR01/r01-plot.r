@@ -215,33 +215,33 @@ LIchange.sd.medialFrontal<-sd(data.long.change.medialFrontal$LIchange.signed, na
 # One-group two-tailed t-tests... 
 # ...for lateralFrontal
 c("H0: 0 = mean of LIchange for lateralFrontal pre-to-post intention participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.lateralFrontal.LIchange1.post.intention, test=t.test, alternative="two.sided")
+t.test(data.long.change.lateralFrontal.LIchange1.post.intention$LIchange.signed, mu=0, alternative="two.sided")
 c("H0: 0 = mean of LIchange for lateralFrontal pre-to-post control participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.lateralFrontal.LIchange1.post.control, test=t.test, alternative="two.sided")
+t.test(data.long.change.lateralFrontal.LIchange1.post.control$LIchange.signed, mu=0, alternative="two.sided")
 c("H0: 0 = mean of LIchange for lateralFrontal pre-to-followup intention participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.lateralFrontal.LIchange2.followup.intention, test=t.test, alternative="two.sided")
+t.test(data.long.change.lateralFrontal.LIchange2.followup.intention$LIchange.signed, mu=0, alternative="two.sided")
 c("H0: 0 = mean of LIchange for lateralFrontal pre-to-followup control participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.lateralFrontal.LIchange2.followup.control, test=t.test, alternative="two.sided")
+t.test(data.long.change.lateralFrontal.LIchange2.followup.control$LIchange.signed, mu=0, alternative="two.sided")
 
 # ...for perisylvian
 c("H0: 0 = mean of LIchange for perisylvian pre-to-post intention participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.perisylvian.LIchange1.post.intention, test=t.test, alternative="two.sided")
+t.test(data.long.change.perisylvian.LIchange1.post.intention$LIchange.signed, mu=0, alternative="two.sided")
 c("H0: 0 = mean of LIchange for perisylvian pre-to-post control participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.perisylvian.LIchange1.post.control, test=t.test, alternative="two.sided")
+t.test(data.long.change.perisylvian.LIchange1.post.control$LIchange.signed, mu=0, alternative="two.sided")
 c("H0: 0 = mean of LIchange for perisylvian pre-to-followup intention participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.perisylvian.LIchange2.followup.intention, test=t.test, alternative="two.sided")
+t.test(data.long.change.perisylvian.LIchange2.followup.intention$LIchange.signed, mu=0, alternative="two.sided")
 c("H0: 0 = mean of LIchange for perisylvian pre-to-followup control participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.perisylvian.LIchange2.followup.control, test=t.test, alternative="two.sided")
+t.test(data.long.change.perisylvian.LIchange2.followup.control$LIchange.signed, mu=0, alternative="two.sided")
 
 # ...for medialFrontal
-c("H0: 0 = mean of LIchange for medialFrontal pre-to-post intention participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.medialFrontal.LIchange1.post.intention, test=t.test, alternative="two.sided")
-c("H0: 0 = mean of LIchange for medialFrontal pre-to-post control participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.medialFrontal.LIchange1.post.control, test=t.test, alternative="two.sided")
-c("H0: 0 = mean of LIchange for medialFrontal pre-to-followup intention participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.medialFrontal.LIchange2.followup.intention, test=t.test, alternative="two.sided")
-c("H0: 0 = mean of LIchange for medialFrontal pre-to-followup control participants :")
-one.sample.test(variables=d(LIchange.signed), data=data.long.change.medialFrontal.LIchange2.followup.control, test=t.test, alternative="two.sided")
+#c("H0: 0 = mean of LIchange for medialFrontal pre-to-post intention participants :")
+#one.sample.test(variables=d(LIchange.signed), data=data.long.change.medialFrontal.LIchange1.post.intention, test=t.test, alternative="two.sided")
+#c("H0: 0 = mean of LIchange for medialFrontal pre-to-post control participants :")
+#one.sample.test(variables=d(LIchange.signed), data=data.long.change.medialFrontal.LIchange1.post.control, test=t.test, alternative="two.sided")
+#c("H0: 0 = mean of LIchange for medialFrontal pre-to-followup intention participants :")
+#one.sample.test(variables=d(LIchange.signed), data=data.long.change.medialFrontal.LIchange2.followup.intention, test=t.test, alternative="two.sided")
+#c("H0: 0 = mean of LIchange for medialFrontal pre-to-followup control participants :")
+#one.sample.test(variables=d(LIchange.signed), data=data.long.change.medialFrontal.LIchange2.followup.control, test=t.test, alternative="two.sided")
 
 
 #########################################################################################################################
