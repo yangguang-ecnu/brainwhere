@@ -19,4 +19,9 @@ gedit ${parentDir}/${blind}/${session}/afnifiles/${blind}*${session}*report*txt 
 # /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/${session}/afnifiles/${blind}_${session}*allresp.resp.nii.gz \
 # /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/${session}/afnifiles/${blind}_${session}*stim.buck.nii.gz \
 # /data/birc/RESEARCH/RO1/SUBJECTS/INT2/towlerGamma/${blind}/${session}/afnifiles/${blind}_${session}*allresp.buck.nii.gz &
+afni \
+${parentDir}/${blind}/${session}/afnifiles/*stim.buck.nii.gz \
+${parentDir}/${blind}/${session}/afnifiles/*allresp.buck.nii.gz \
+${parentDir}/${blind}/${session}/afnifiles/*resp.nii.gz \
+${parentDir}/${blind}/${session}/afnifiles/*t1_orig.nii.gz
 

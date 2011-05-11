@@ -1,21 +1,21 @@
-01 LeftCerebral White Matter
-02 LeftCerebral Cortex 
-03 LeftLateral Ventrical
-04 LeftThalamus
-05 LeftCaudate
-06 LeftPutamen
-07 LeftPallidum
-08 Brain-Stem
-09 LeftHippocampus
-10 LeftAmygdala
-11 LeftAccumbens
-12 RightCerebral White Matter
-13 RightCerebral Cortex
-14 RightLateral Ventricle
-15 RightThalamus
-16 RightCaudate
-17 RightPutamen
-18 RightPallidum
-19 RightHippocampus
-20 RightAmygdala
-21 RightAccumbens
+02 LeftCerebralWM
+03 LeftCerebralCtx
+04 LeftLatVen
+10 LeftThalamus
+11 LeftCaudate
+12 LeftPutamen
+13 LeftPallidum
+16 BrainStem
+17 LeftHippocampus
+18 LeftAmygdala
+26 LeftAccumbens
+41 RightCerebralWM
+42 RightCerebralCtx
+43 RightLatVen
+49 RightThalamus
+50 RightCaudate
+51 RightPutamen
+52 RightPallidum
+53 RightHippocampus
+54 RightAmygdala
+58 RightAccumbens
