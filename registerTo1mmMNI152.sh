@@ -364,9 +364,14 @@ if [ -s "`echo ${epi}`" ]; then
 	echo ""
 	echo ""
 	echo "Linear transformation of EPI takes about two minutes..."
+	# first create a 3D mean across EPI timepoints:
+	fslmaths ${tempDir}/${blind}_${session}_epi.nii.gz -Tmean ${tempDir}/${blind}_${session}_epi_averaged.nii.gz
+
+	# now use this 3D average EPI in the calculation of the transformation
+	# instead of the original EPI:
 	flirt \
 	-ref ${tempDir}/${blind}_t1 \
-	-in ${tempDir}/${blind}_epi \
+	-in ${tempDir}/${blind}_epi_averaged \
 	-refweight ${tempDir}/${blind}_lesionInverted \
 	-dof 6 \
 	-cost mutualinfo \
@@ -375,6 +380,16 @@ if [ -s "`echo ${epi}`" ]; then
 	ls -l ${tempDir}/${blind}_func2struct.mat
 	echo ""
 	echo ""
+
+	# and now apply calcuated transformtion to produce
+	# _epi_averaged_func2struct.nii.gz for easy visual verification of
+	# linear EPI-to-structural registration:
+	flirt \ 
+	-in ${tempDir}/${blind}_${session}_epi_averaged.nii.gz \
+	-ref ${tempDir}/${blind}_${session}_t1_brain.nii.gz \
+	-applyxfm -init ${tempDir}/${blind}_${session}_func2struct.mat \
+	-out ${tempDir}/${blind}_${session}_epi_averaged_func2struct.nii.gz
+
 fi
 
 
@@ -447,6 +462,7 @@ if [ -s "`echo ${epi}`" ]; then
 	echo ""
 	echo ""
 	echo "applying nonlinear warp to epi (about 30 minutes)..."
+	# temporarily disabling warp of full 4D EPI....
 	#ls -l ${tempDir}/${blind}_epi*
 	#applywarp \
 	#     --ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
@@ -454,14 +470,16 @@ if [ -s "`echo ${epi}`" ]; then
 	#     --warp=${tempDir}/${blind}_nonlinear_transf \
 	#     --premat=${tempDir}/${blind}_func2struct.mat \
 	#     --out=${tempDir}/${blind}_epi_warped
+
+	# ...in exchange for faster warp of 3D EPI average:
 	applywarp \
 		--ref=${FSLDIR}/data/standard/MNI152_T1_1mm \
-		--in=${tempDir}/${blind}_epi \
+		--in=${tempDir}/${blind}_epi_averaged \
 		--warp=${tempDir}/${blind}_nonlinear_transf \
 		--premat=${tempDir}/${blind}_func2struct.mat \
-		--out=${tempDir}/${blind}_epi_warped \
+		--out=${tempDir}/${blind}_epi_averaged_warped \
 		-v 
-	ls -l ${tempDir}/${blind}_epi_warped*
+	ls -l ${tempDir}/${blind}_epi*warped*
 fi
 
 # the following requires echo $var, not just $var for ws-sep'd values in $var to be subsequently read as multiple values instead of single value containing ws:
@@ -545,8 +563,8 @@ cp ${tempDir}/*.mat ${outDir}/
 
 # ------------------------- START: say bye and restore environment ------------------------- #
 
-rm -f ${tempDir}/inputUnformatted.txt
-rm -fr ${tempDir}
+#rm -f ${tempDir}/inputUnformatted.txt
+#rm -fr ${tempDir}
 #echo ${tempDir}
 #ls -ltr ${tempDir}
 echo ""
