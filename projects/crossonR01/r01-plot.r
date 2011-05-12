@@ -20,11 +20,20 @@ head(data.long)
 str(data.long)
 summary(data.long)
 
+# import csv and double-check it:
+data.cstat<-(read.csv("/tmp/r01-cstat-Z.csv"))
+head(data.cstat)
+str(data.cstat)
+summary(data.cstat)
+
 # calculate LI and spot-check. Results in NaN when dividing by zero
 data.long <- transform(data.long, LI=(ulLeft-ulRight)/(ulLeft+ulRight))
 head(data.long)
 summary(data.long)
-# ^^ notice NA's in LI summary
+# ^^ notice NA's in LI summary !!!!!!!!!!!! change to zeros by convention !!!!!!!!!!!!!!!!
+data.long[sapply(data.long,is.na)] = 0
+summary(data.long)
+
 
 # change factor level "3mo" to "followup" for better naming
 levels(data.long$session)
@@ -162,6 +171,15 @@ names(data.long.change)[names(data.long.change)=="variable"]<-"LIchange.period"
 names(data.long.change)[names(data.long.change)=="value"]<-"LIchange.signed"
 summary(data.long.change)
 
+# add cstat data
+data.long.change<-(join(data.long.change, data.cstat, by="participant"))
+# subset for plotting just post:
+data.long.change.post<-subset(data.long.change, LIchange.period == "LIchange1.post")
+# plot separately for naming and categories:
+p.corr.naming<-ggplot(data.long.change.post,aes(LIchange.signed, naming.cstat.Z.post)) + geom_point() + geom_smooth(method=lm) + scale_x_reverse() + facet_grid(group ~ roi)
+p.corr.categories<-ggplot(data.long.change.post,aes(LIchange.signed, category.cstat.Z.post)) + geom_point() + geom_smooth(method=lm) + scale_x_reverse() + facet_grid(group ~ roi)
+
+
 # subset for plots and stats by region per BC:
 data.long.change.lateralFrontal<-subset(data.long.change,roi == "CROSSONlateralFrontalROI")
 	data.long.change.lateralFrontal.LIchange1.post<-subset(data.long.change.lateralFrontal, LIchange.period == "LIchange1.post")
@@ -216,22 +234,68 @@ LIchange.sd.medialFrontal<-sd(data.long.change.medialFrontal$LIchange.signed, na
 # ...for lateralFrontal
 c("H0: 0 = mean of LIchange for lateralFrontal pre-to-post intention participants :")
 t.test(data.long.change.lateralFrontal.LIchange1.post.intention$LIchange.signed, mu=0, alternative="two.sided")
+#with(data.long.change.lateralFrontal.LIchange1.post.intention, cor(LIchange.signed,category.cstat.Z.post,use="pairwise.complete.obs"))
+#with(data.long.change.lateralFrontal.LIchange1.post.intention, cor(LIchange.signed,naming.cstat.Z.post,use="pairwise.complete.obs"))
+cor.test(data.long.change.lateralFrontal.LIchange1.post.intention$LIchange.signed, data.long.change.lateralFrontal.LIchange1.post.intention$naming.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.lateralFrontal.LIchange1.post.intention$LIchange.signed, data.long.change.lateralFrontal.LIchange1.post.intention$naming.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.lateralFrontal.LIchange1.post.intention$LIchange.signed, data.long.change.lateralFrontal.LIchange1.post.intention$category.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.lateralFrontal.LIchange1.post.intention$LIchange.signed, data.long.change.lateralFrontal.LIchange1.post.intention$category.cstat.Z.post, alternative="two.sided", method="spearman")
+
+
 c("H0: 0 = mean of LIchange for lateralFrontal pre-to-post control participants :")
 t.test(data.long.change.lateralFrontal.LIchange1.post.control$LIchange.signed, mu=0, alternative="two.sided")
+cor.test(data.long.change.lateralFrontal.LIchange1.post.control$LIchange.signed, data.long.change.lateralFrontal.LIchange1.post.control$naming.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.lateralFrontal.LIchange1.post.control$LIchange.signed, data.long.change.lateralFrontal.LIchange1.post.control$naming.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.lateralFrontal.LIchange1.post.control$LIchange.signed, data.long.change.lateralFrontal.LIchange1.post.control$category.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.lateralFrontal.LIchange1.post.control$LIchange.signed, data.long.change.lateralFrontal.LIchange1.post.control$category.cstat.Z.post, alternative="two.sided", method="spearman")
+
+
+
 c("H0: 0 = mean of LIchange for lateralFrontal pre-to-followup intention participants :")
 t.test(data.long.change.lateralFrontal.LIchange2.followup.intention$LIchange.signed, mu=0, alternative="two.sided")
+cor.test(data.long.change.lateralFrontal.LIchange2.followup.intention$LIchange.signed, data.long.change.lateralFrontal.LIchange2.followup.intention$naming.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.lateralFrontal.LIchange2.followup.intention$LIchange.signed, data.long.change.lateralFrontal.LIchange2.followup.intention$naming.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.lateralFrontal.LIchange2.followup.intention$LIchange.signed, data.long.change.lateralFrontal.LIchange2.followup.intention$category.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.lateralFrontal.LIchange2.followup.intention$LIchange.signed, data.long.change.lateralFrontal.LIchange2.followup.intention$category.cstat.Z.post, alternative="two.sided", method="spearman")
+
+
 c("H0: 0 = mean of LIchange for lateralFrontal pre-to-followup control participants :")
 t.test(data.long.change.lateralFrontal.LIchange2.followup.control$LIchange.signed, mu=0, alternative="two.sided")
+cor.test(data.long.change.lateralFrontal.LIchange2.followup.control$LIchange.signed, data.long.change.lateralFrontal.LIchange2.followup.control$naming.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.lateralFrontal.LIchange2.followup.control$LIchange.signed, data.long.change.lateralFrontal.LIchange2.followup.control$naming.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.lateralFrontal.LIchange2.followup.control$LIchange.signed, data.long.change.lateralFrontal.LIchange2.followup.control$category.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.lateralFrontal.LIchange2.followup.control$LIchange.signed, data.long.change.lateralFrontal.LIchange2.followup.control$category.cstat.Z.post, alternative="two.sided", method="spearman")
 
 # ...for perisylvian
 c("H0: 0 = mean of LIchange for perisylvian pre-to-post intention participants :")
 t.test(data.long.change.perisylvian.LIchange1.post.intention$LIchange.signed, mu=0, alternative="two.sided")
+cor.test(data.long.change.perisylvian.LIchange1.post.intention$LIchange.signed, data.long.change.perisylvian.LIchange1.post.intention$naming.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.perisylvian.LIchange1.post.intention$LIchange.signed, data.long.change.perisylvian.LIchange1.post.intention$naming.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.perisylvian.LIchange1.post.intention$LIchange.signed, data.long.change.perisylvian.LIchange1.post.intention$category.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.perisylvian.LIchange1.post.intention$LIchange.signed, data.long.change.perisylvian.LIchange1.post.intention$category.cstat.Z.post, alternative="two.sided", method="spearman")
+
+
 c("H0: 0 = mean of LIchange for perisylvian pre-to-post control participants :")
 t.test(data.long.change.perisylvian.LIchange1.post.control$LIchange.signed, mu=0, alternative="two.sided")
+cor.test(data.long.change.perisylvian.LIchange1.post.control$LIchange.signed, data.long.change.perisylvian.LIchange1.post.control$naming.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.perisylvian.LIchange1.post.control$LIchange.signed, data.long.change.perisylvian.LIchange1.post.control$naming.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.perisylvian.LIchange1.post.control$LIchange.signed, data.long.change.perisylvian.LIchange1.post.control$category.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.perisylvian.LIchange1.post.control$LIchange.signed, data.long.change.perisylvian.LIchange1.post.control$category.cstat.Z.post, alternative="two.sided", method="spearman")
+
+
 c("H0: 0 = mean of LIchange for perisylvian pre-to-followup intention participants :")
 t.test(data.long.change.perisylvian.LIchange2.followup.intention$LIchange.signed, mu=0, alternative="two.sided")
+cor.test(data.long.change.perisylvian.LIchange2.followup.intention$LIchange.signed, data.long.change.perisylvian.LIchange2.followup.intention$naming.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.perisylvian.LIchange2.followup.intention$LIchange.signed, data.long.change.perisylvian.LIchange2.followup.intention$naming.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.perisylvian.LIchange2.followup.intention$LIchange.signed, data.long.change.perisylvian.LIchange2.followup.intention$category.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.perisylvian.LIchange2.followup.intention$LIchange.signed, data.long.change.perisylvian.LIchange2.followup.intention$category.cstat.Z.post, alternative="two.sided", method="spearman")
+
 c("H0: 0 = mean of LIchange for perisylvian pre-to-followup control participants :")
 t.test(data.long.change.perisylvian.LIchange2.followup.control$LIchange.signed, mu=0, alternative="two.sided")
+cor.test(data.long.change.perisylvian.LIchange2.followup.control$LIchange.signed, data.long.change.perisylvian.LIchange2.followup.control$naming.cstat.Z.post, alternative="two.sided", method="pearson")
+cor.test(data.long.change.perisylvian.LIchange2.followup.control$LIchange.signed, data.long.change.perisylvian.LIchange2.followup.control$naming.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.perisylvian.LIchange2.followup.control$LIchange.signed, data.long.change.perisylvian.LIchange2.followup.control$category.cstat.Z.post, alternative="two.sided", method="spearman")
+cor.test(data.long.change.perisylvian.LIchange2.followup.control$LIchange.signed, data.long.change.perisylvian.LIchange2.followup.control$category.cstat.Z.post, alternative="two.sided", method="pearson")
 
 # ...for medialFrontal
 #c("H0: 0 = mean of LIchange for medialFrontal pre-to-post intention participants :")
@@ -340,6 +404,8 @@ print(p.lateralityChange)
 print(p.lateralityChange.lateralFrontal)
 print(p.lateralityChange.perisylvian)
 print(p.lateralityChange.medialFrontal)
+print(p.corr.naming)
+print(p.corr.categories)
 dev.off()
 
 # view pdf in evince or acroread:
