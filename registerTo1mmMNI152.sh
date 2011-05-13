@@ -366,15 +366,16 @@ if [ -s "`echo ${epi}`" ]; then
 	echo "Linear transformation of EPI takes about two minutes..."
 	# first create a 3D mean across EPI timepoints:
 	fslmaths ${tempDir}/${blind}_epi.nii.gz -Tmean ${tempDir}/${blind}_epi_averaged.nii.gz
+	bet ${blind}_epi_averaged.nii.gz ${blind}_epi_averaged_brain.nii.gz -R -v
 
 	# now use this 3D average EPI in the calculation of the transformation
 	# instead of the original EPI:
 	flirt \
 	-ref ${tempDir}/${blind}_t1 \
-	-in ${tempDir}/${blind}_epi_averaged \
+	-in ${tempDir}/${blind}_epi_averaged_brain \
 	-refweight ${tempDir}/${blind}_lesionInverted \
 	-dof 6 \
-	-cost mutualinfo \
+	-cost corratio \
 	-omat ${tempDir}/${blind}_func2struct.mat
 	echo "...done:"
 	ls -l ${tempDir}/${blind}_func2struct.mat
@@ -384,12 +385,11 @@ if [ -s "`echo ${epi}`" ]; then
 	# and now apply calcuated transformtion to produce
 	# _epi_averaged_func2struct.nii.gz for easy visual verification of
 	# linear EPI-to-structural registration:
-	flirt \ 
+	flirt \
 	-in ${tempDir}/${blind}_epi_averaged.nii.gz \
 	-ref ${tempDir}/${blind}_t1_brain.nii.gz \
 	-applyxfm -init ${tempDir}/${blind}_func2struct.mat \
 	-out ${tempDir}/${blind}_epi_averaged_func2struct.nii.gz
-
 fi
 
 
