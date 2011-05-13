@@ -366,12 +366,12 @@ if [ -s "`echo ${epi}`" ]; then
 	echo "Linear transformation of EPI takes about two minutes..."
 	# first create a 3D mean across EPI timepoints:
 	fslmaths ${tempDir}/${blind}_epi.nii.gz -Tmean ${tempDir}/${blind}_epi_averaged.nii.gz
-	bet ${blind}_epi_averaged.nii.gz ${blind}_epi_averaged_brain.nii.gz -R -v
+	bet ${tempDir}/${blind}_epi_averaged.nii.gz ${tempDir}/${blind}_epi_averaged_brain.nii.gz -R -v
 
 	# now use this 3D average EPI in the calculation of the transformation
 	# instead of the original EPI:
 	flirt \
-	-ref ${tempDir}/${blind}_t1 \
+	-ref ${tempDir}/${blind}_t1_brain \
 	-in ${tempDir}/${blind}_epi_averaged_brain \
 	-refweight ${tempDir}/${blind}_lesionInverted \
 	-dof 6 \
