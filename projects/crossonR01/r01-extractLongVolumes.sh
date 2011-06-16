@@ -9,8 +9,9 @@ echo "participant,group,session,roi,ulLeft,ulRight"
 # this triple loop extracts left and right ul volumes for each blindXsessionXroi combo:
 for blind in `echo ${intentionBlinds} ${controlBlinds}`; do
    for session in pre post 3mo; do
-      for roi in CROSSONlateralFrontalROI CROSSONPerisylvian CROSSONmedialFrontal; do
-         clusterReportFile="${parentDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer2Only.txt"
+      #for roi in CROSSONlateralFrontalROI CROSSONPerisylvian CROSSONmedialFrontal; do
+      for roi in CROSSONremainingLatFrontal CROSSONifg CROSSONlatMotor; do
+         clusterReportFile="${parentDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer3Only.txt"
          ulLeft=`grep ^.....${roi} ${clusterReportFile} | awk '{print $5}'`
          ulRight=`grep ^.....${roi} ${clusterReportFile} | awk '{print $6}'`
          # assign group label for line, allowing that user accidentally assigned blind to multiple groups

@@ -390,6 +390,13 @@ if [ -s "`echo ${epi}`" ]; then
 	-ref ${tempDir}/${blind}_t1_brain.nii.gz \
 	-applyxfm -init ${tempDir}/${blind}_func2struct.mat \
 	-out ${tempDir}/${blind}_epi_averaged_func2struct.nii.gz
+
+	# ...and also to extracted EPI:
+	flirt \
+	-in ${tempDir}/${blind}_epi_averaged_brain.nii.gz \
+	-ref ${tempDir}/${blind}_t1_brain.nii.gz \
+	-applyxfm -init ${tempDir}/${blind}_func2struct.mat \
+	-out ${tempDir}/${blind}_epi_averaged_brain_func2struct.nii.gz
 fi
 
 
