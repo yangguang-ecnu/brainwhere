@@ -7,7 +7,8 @@
 #   and sd)
 # - though range of LI is 1 to -1, showing 2 to -2 on axis to make equivalent
 #   with range of LIchange
-
+# this is a test change from Rstudio on VM
+# and this is a second line
 
 # load required libraries
 library(ggplot2)
