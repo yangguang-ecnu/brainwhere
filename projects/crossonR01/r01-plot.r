@@ -115,8 +115,8 @@ p.laterality<-ggplot(data.long, aes(participant, LI, fill=session)) +
 	scale_fill_brewer(palette="YlOrRd") + 
 	theme_bw() + ylab("Laterality Index") + 
 	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nThree Anatomical Regions\n(grand mean LI=", round(LI.mean.all, digits=2), ", sd=" ,round(LI.sd.all, digits=2),")" ))
-# ...display
-p.laterality
+# ...display:
+#p.laterality
 
 # and now similar plots for individual ROI LIs:
 
@@ -336,8 +336,8 @@ p.lateralityChange<-ggplot(data.long.change, aes(participant, LIchange.signed, f
 	ylim(2,-2) + 
 	theme_bw() + ylab("Signed Change in Laterality Index") + 
 	opts(title=paste("Change in Laterality Index for Three Anatomical Regions:\nPre-to-Post and Pre-to-3-Month-Follow-Up"))
-# ...display
-p.lateralityChange
+# ...display:
+#p.lateralityChange
 
 
 # old, pre-poster lateralityChange plot for all regions:
@@ -355,8 +355,8 @@ p.lateralityChange
 # 	scale_fill_brewer(palette="Blues") + 
 # 	theme_bw() + ylab("Signed Change in Laterality Index") + 
 # 	opts(title=paste("Change in Laterality Index for Three Anatomical Regions:\nPre-to-Post and Pre-to-Follow-Up \n(grand mean LIchange=", round(LIchange.mean.all, digits=2), ", sd=" ,round(LIchange.sd.all, digits=2),")" ))
-# # ...display
-# p.laterality
+# # ...display:
+# p.lateralityChange
 
 # and now similar plots for individual ROI LIchanges:
 
@@ -427,12 +427,12 @@ print(p.corr.naming)
 print(p.corr.categories)
 # followed by everything else:
 print(p.laterality)
-print(p.laterality.lateralFrontal)
-print(p.laterality.perisylvian)
-print(p.laterality.medialFrontal)
-print(p.lateralityChange.lateralFrontal)
-print(p.lateralityChange.perisylvian)
-print(p.lateralityChange.medialFrontal)
+#print(p.laterality.lateralFrontal)
+#print(p.laterality.perisylvian)
+#print(p.laterality.medialFrontal)
+#print(p.lateralityChange.lateralFrontal)
+#print(p.lateralityChange.perisylvian)
+#print(p.lateralityChange.medialFrontal)
 dev.off()
 
 # view pdf in evince or acroread:
