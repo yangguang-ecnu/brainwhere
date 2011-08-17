@@ -16,13 +16,19 @@ library(plyr)
 library(reshape2)
 
 # import csv and double-check it:
+#data.long<-(read.csv("/tmp/r01_li_long.csv"))
+#data.long<-(read.csv("https://docs.google.com/spreadsheet/pub?key=0AtQwiwfBQVsYdEJ1aEhvdGNIMHRxOVhuWHBQTVppWWc&single=true&gid=0&range=A1%3AC20&output=csv&ndplr=1"))
+data.long.url<-"https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=0AtQwiwfBQVsYdFZOTnNHMGM1c09WRWc4aXUzYVRTWHc&single=true&gid=0&output=csv&ndplr=1"
+download.file(data.long.url, "/tmp/r01_li_long.csv", method = "wget")
 data.long<-(read.csv("/tmp/r01_li_long.csv"))
 head(data.long)
 str(data.long)
 summary(data.long)
 
 # import csv and double-check it:
-data.cstat<-(read.csv("/tmp/r01-cstat-Z.csv"))
+data.cstat.url<-"https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=0AtQwiwfBQVsYdEdJWC1fNkJUaGRjb1pHOV9qWmpWdFE&single=true&gid=0&output=csv&ndplr=1"
+download.file(data.cstat.url, "/tmp/r01_cstat_z.csv", method = "wget")
+data.cstat<-(read.csv("/tmp/r01_cstat_z.csv"))
 head(data.cstat)
 str(data.cstat)
 summary(data.cstat)
@@ -114,45 +120,45 @@ p.laterality
 
 # and now similar plots for individual ROI LIs:
 
-p.laterality.lateralFrontal<-ggplot(data.long.lateralFrontal, aes(participant, LI, fill=session)) +
-	geom_hline(yintercept=LI.mean.lateralFrontal, linetype="dashed") + 
-	geom_rect(ymin=-LI.mean.lateralFrontal+LI.sd.lateralFrontal, ymax=-LI.mean.lateralFrontal-LI.sd.lateralFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-	geom_hline(yintercept=0) +
-	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-	coord_flip() + 
-	facet_grid(roi ~ group, space="free") + 
-	ylim(2,-2) + 
-	scale_fill_brewer(palette="YlOrRd") + 
-	theme_bw() + ylab("Laterality Index") + 
-	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nLateral Frontal Region\n(mean LI=", round(LI.mean.lateralFrontal, digits=2), ", sd=" ,round(LI.sd.lateralFrontal, digits=2),")"))
+#p.laterality.lateralFrontal<-ggplot(data.long.lateralFrontal, aes(participant, LI, fill=session)) +
+#	geom_hline(yintercept=LI.mean.lateralFrontal, linetype="dashed") + 
+#	geom_rect(ymin=-LI.mean.lateralFrontal+LI.sd.lateralFrontal, ymax=-LI.mean.lateralFrontal-LI.sd.lateralFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
+#	geom_hline(yintercept=0) +
+#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
+#	coord_flip() + 
+#	facet_grid(roi ~ group, space="free") + 
+#	ylim(2,-2) + 
+#	scale_fill_brewer(palette="YlOrRd") + 
+#	theme_bw() + ylab("Laterality Index") + 
+#	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nLateral Frontal Region\n(mean LI=", round(LI.mean.lateralFrontal, digits=2), ", sd=" ,round(LI.sd.lateralFrontal, digits=2),")"))
 # ...display:
 #p.laterality.lateralFrontal
 
-p.laterality.perisylvian<-ggplot(data.long.perisylvian, aes(participant, LI, fill=session)) +
-	geom_hline(yintercept=LI.mean.perisylvian, linetype="dashed") + 
-	geom_rect(ymin=-LI.mean.perisylvian+LI.sd.perisylvian, ymax=-LI.mean.perisylvian-LI.sd.perisylvian, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-	geom_hline(yintercept=0) +
-	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-	coord_flip() + 
-	facet_grid(roi ~ group, space="free") + 
-	ylim(2,-2) + 
-	scale_fill_brewer(palette="YlOrRd") + 
-	theme_bw() + ylab("Laterality Index") + 
-	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nPerisylvian Region\n(mean LI=", round(LI.mean.perisylvian, digits=2), ", sd=" ,round(LI.sd.perisylvian, digits=2),")" ))
+#p.laterality.perisylvian<-ggplot(data.long.perisylvian, aes(participant, LI, fill=session)) +
+#	geom_hline(yintercept=LI.mean.perisylvian, linetype="dashed") + 
+#	geom_rect(ymin=-LI.mean.perisylvian+LI.sd.perisylvian, ymax=-LI.mean.perisylvian-LI.sd.perisylvian, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
+#	geom_hline(yintercept=0) +
+#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
+#	coord_flip() + 
+#	facet_grid(roi ~ group, space="free") + 
+#	ylim(2,-2) + 
+#	scale_fill_brewer(palette="YlOrRd") + 
+#	theme_bw() + ylab("Laterality Index") + 
+#	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nPerisylvian Region\n(mean LI=", round(LI.mean.perisylvian, digits=2), ", sd=" ,round(LI.sd.perisylvian, digits=2),")" ))
 # ...display:
 #p.laterality.perisylvian
 
-p.laterality.medialFrontal<-ggplot(data.long.medialFrontal, aes(participant, LI, fill=session)) +
-	geom_hline(yintercept=LI.mean.medialFrontal, linetype="dashed") + 
-	geom_rect(ymin=-LI.mean.medialFrontal+LI.sd.medialFrontal, ymax=-LI.mean.medialFrontal-LI.sd.medialFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-	geom_hline(yintercept=0) +
-	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-	coord_flip() + 
-	facet_grid(roi ~ group, space="free") + 
-	ylim(2,-2) + 
-	scale_fill_brewer(palette="YlOrRd") + 
-	theme_bw() + ylab("Laterality Index") + 
-	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nMedial Frontal Region\n(mean LI =", round(LI.mean.medialFrontal, digits=2), ", sd=" ,round(LI.sd.medialFrontal, digits=2),")" ))
+#p.laterality.medialFrontal<-ggplot(data.long.medialFrontal, aes(participant, LI, fill=session)) +
+#	geom_hline(yintercept=LI.mean.medialFrontal, linetype="dashed") + 
+#	geom_rect(ymin=-LI.mean.medialFrontal+LI.sd.medialFrontal, ymax=-LI.mean.medialFrontal-LI.sd.medialFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
+#	geom_hline(yintercept=0) +
+#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
+#	coord_flip() + 
+#	facet_grid(roi ~ group, space="free") + 
+#	ylim(2,-2) + 
+#	scale_fill_brewer(palette="YlOrRd") + 
+#	theme_bw() + ylab("Laterality Index") + 
+#	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nMedial Frontal Region\n(mean LI =", round(LI.mean.medialFrontal, digits=2), ", sd=" ,round(LI.sd.medialFrontal, digits=2),")" ))
 # ...display:
 #p.laterality.medialFrontal
 
@@ -162,7 +168,6 @@ p.laterality.medialFrontal<-ggplot(data.long.medialFrontal, aes(participant, LI,
 #########################################################################################################################
 # now pivot and restructure data to wide format for calculation of LIchange1 and LIchange2
 data.wide <- dcast(data.long, participant + group + roi ~ session, value_var="LI")
-
 str(data.wide)
 summary(data.wide)
 
@@ -332,7 +337,7 @@ p.lateralityChange<-ggplot(data.long.change, aes(participant, LIchange.signed, f
 	theme_bw() + ylab("Signed Change in Laterality Index") + 
 	opts(title=paste("Change in Laterality Index for Three Anatomical Regions:\nPre-to-Post and Pre-to-3-Month-Follow-Up"))
 # ...display
-p.laterality
+p.lateralityChange
 
 
 # old, pre-poster lateralityChange plot for all regions:
@@ -355,47 +360,47 @@ p.laterality
 
 # and now similar plots for individual ROI LIchanges:
 
-p.lateralityChange.lateralFrontal<-ggplot(data.long.change.lateralFrontal, aes(participant, LIchange.signed, fill=LIchange.period)) +
-	geom_hline(yintercept=LIchange.mean.lateralFrontal, linetype="dashed") + 
-	geom_rect(ymin=-LIchange.mean.lateralFrontal+LIchange.sd.lateralFrontal, ymax=-LIchange.mean.lateralFrontal-LIchange.sd.lateralFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-	geom_hline(yintercept=0) +
-	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-	coord_flip() + 
-	facet_grid(roi ~ group, space="free") + 
-	ylim(2,-2) + 
-	scale_fill_brewer(palette="Blues") + 
-	theme_bw() + ylab("Signed Change in Laterality Index") + 
-	opts(title=paste("Change in Laterality Index for Lateral Frontal Region: \nPre-to-Post and Pre-to-Follow-Up \n(mean LIchange=", round(LIchange.mean.lateralFrontal, digits=2), ", sd=" ,round(LIchange.sd.lateralFrontal, digits=2),")"))
-# ...display:
-#p.laterality.lateralFrontal
+#p.lateralityChange.lateralFrontal<-ggplot(data.long.change.lateralFrontal, aes(participant, LIchange.signed, fill=LIchange.period)) +
+#	geom_hline(yintercept=LIchange.mean.lateralFrontal, linetype="dashed") + 
+#	geom_rect(ymin=-LIchange.mean.lateralFrontal+LIchange.sd.lateralFrontal, ymax=-LIchange.mean.lateralFrontal-LIchange.sd.lateralFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
+#	geom_hline(yintercept=0) +
+#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
+#	coord_flip() + 
+#	facet_grid(roi ~ group, space="free") + 
+#	ylim(2,-2) + 
+#	scale_fill_brewer(palette="Blues") + 
+#	theme_bw() + ylab("Signed Change in Laterality Index") + 
+#	opts(title=paste("Change in Laterality Index for Lateral Frontal Region: \nPre-to-Post and Pre-to-Follow-Up \n(mean LIchange=", round(LIchange.mean.lateralFrontal, digits=2), ", sd=" ,round(LIchange.sd.lateralFrontal, digits=2),")"))
+## ...display:
+#p.lateralityChange.lateralFrontal
 
-p.lateralityChange.perisylvian<-ggplot(data.long.change.perisylvian, aes(participant, LIchange.signed, fill=LIchange.period)) +
-	geom_hline(yintercept=LIchange.mean.perisylvian, linetype="dashed") + 
-	geom_rect(ymin=-LIchange.mean.perisylvian+LIchange.sd.perisylvian, ymax=-LIchange.mean.perisylvian-LIchange.sd.perisylvian, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-	geom_hline(yintercept=0) +
-	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-	coord_flip() + 
-	facet_grid(roi ~ group, space="free") + 
-	ylim(2,-2) + 
-	scale_fill_brewer(palette="Blues") + 
-	theme_bw() + ylab("Signed Change in Laterality Index") + 
-	opts(title=paste("Change in Laterality Index for Perisylvian Region: \nPre-to-Post and Pre-to-Follow-Up \n(mean LIchange=", round(LIchange.mean.perisylvian, digits=2), ", sd=" ,round(LIchange.sd.perisylvian, digits=2),")" ))
-# ...display:
-#p.laterality.perisylvian
+#p.lateralityChange.perisylvian<-ggplot(data.long.change.perisylvian, aes(participant, LIchange.signed, fill=LIchange.period)) +
+#	geom_hline(yintercept=LIchange.mean.perisylvian, linetype="dashed") + 
+#	geom_rect(ymin=-LIchange.mean.perisylvian+LIchange.sd.perisylvian, ymax=-LIchange.mean.perisylvian-LIchange.sd.perisylvian, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
+#	geom_hline(yintercept=0) +
+#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
+#	coord_flip() + 
+#	facet_grid(roi ~ group, space="free") + 
+#	ylim(2,-2) + 
+#	scale_fill_brewer(palette="Blues") + 
+#	theme_bw() + ylab("Signed Change in Laterality Index") + 
+#	opts(title=paste("Change in Laterality Index for Perisylvian Region: \nPre-to-Post and Pre-to-Follow-Up \n(mean LIchange=", round(LIchange.mean.perisylvian, digits=2), ", sd=" ,round(LIchange.sd.perisylvian, digits=2),")" ))
+## ...display:
+#p.lateralityChange.perisylvian
 
-p.lateralityChange.medialFrontal<-ggplot(data.long.change.medialFrontal, aes(participant, LIchange.signed, fill=LIchange.period)) +
-	geom_hline(yintercept=LIchange.mean.medialFrontal, linetype="dashed") + 
-	geom_rect(ymin=-LIchange.mean.medialFrontal+LIchange.sd.medialFrontal, ymax=-LIchange.mean.medialFrontal-LIchange.sd.medialFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-	geom_hline(yintercept=0) +
-	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-	coord_flip() + 
-	facet_grid(roi ~ group, space="free") + 
-	ylim(2,-2) + 
-	scale_fill_brewer(palette="Blues") + 
-	theme_bw() + ylab("Signed Change in Laterality Index") + 
-	opts(title=paste("Change in Laterality Index for Medial Frontal Region: \nPre-to-Post and Pre-to-Follow-Up\n(mean LIchange =", round(LIchange.mean.medialFrontal, digits=2), ", sd=" ,round(LIchange.sd.medialFrontal, digits=2),")" ))
+#p.lateralityChange.medialFrontal<-ggplot(data.long.change.medialFrontal, aes(participant, LIchange.signed, fill=LIchange.period)) +
+#	geom_hline(yintercept=LIchange.mean.medialFrontal, linetype="dashed") + 
+#	geom_rect(ymin=-LIchange.mean.medialFrontal+LIchange.sd.medialFrontal, ymax=-LIchange.mean.medialFrontal-LIchange.sd.medialFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
+#	geom_hline(yintercept=0) +
+#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
+#	coord_flip() + 
+#	facet_grid(roi ~ group, space="free") + 
+#	ylim(2,-2) + 
+#	scale_fill_brewer(palette="Blues") + 
+#	theme_bw() + ylab("Signed Change in Laterality Index") + 
+#	opts(title=paste("Change in Laterality Index for Medial Frontal Region: \nPre-to-Post and Pre-to-Follow-Up\n(mean LIchange =", round(LIchange.mean.medialFrontal, digits=2), ", sd=" ,round(LIchange.sd.medialFrontal, digits=2),")" ))
 # ...display:
-#p.laterality.medialFrontal
+#p.lateralityChange.medialFrontal
 
 # TBD: also eventually try as a dotchart with geom_point + geom_segment
 
@@ -431,4 +436,4 @@ print(p.lateralityChange.medialFrontal)
 dev.off()
 
 # view pdf in evince or acroread:
-system("acroread /tmp/r01-plots.pdf &")
+system("evince /tmp/r01-plots.pdf &")
