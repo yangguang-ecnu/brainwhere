@@ -1,5 +1,5 @@
 #!/usr/bin/Rscript
-# This script contains r commands for creating plots of R01 data:
+# This script contains r commands for creating plots of crossonR01 data:
 # 
 # Notes about analysis and visualization choices:
 # - mean and sd calculated without NAs (i.e., if division by zero results in LI
@@ -7,17 +7,15 @@
 #   and sd)
 # - though range of LI is 1 to -1, showing 2 to -2 on axis to make equivalent
 #   with range of LIchange
-# this is a test change from Rstudio on VM
-# and this is a second line
 
-# load required libraries
+
+# load required libraries:
 library(ggplot2)
 library(plyr)
 library(reshape2)
 
 # import csv and double-check it:
-#data.long<-(read.csv("/tmp/r01_li_long.csv"))
-#data.long<-(read.csv("https://docs.google.com/spreadsheet/pub?key=0AtQwiwfBQVsYdEJ1aEhvdGNIMHRxOVhuWHBQTVppWWc&single=true&gid=0&range=A1%3AC20&output=csv&ndplr=1"))
+# !!!!! broken right now: data.long<-(read.csv("https://docs.google.com/spreadsheet/pub?key=0AtQwiwfBQVsYdEJ1aEhvdGNIMHRxOVhuWHBQTVppWWc&single=true&gid=0&range=A1%3AC20&output=csv&ndplr=1"))
 data.long.url<-"https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=0AtQwiwfBQVsYdFZOTnNHMGM1c09WRWc4aXUzYVRTWHc&single=true&gid=0&output=csv&ndplr=1"
 download.file(data.long.url, "/tmp/r01_li_long.csv", method = "wget")
 data.long<-(read.csv("/tmp/r01_li_long.csv"))
@@ -33,40 +31,40 @@ head(data.cstat)
 str(data.cstat)
 summary(data.cstat)
 
-# calculate LI and spot-check. Results in NaN when dividing by zero
+# calculate LI and spot-check. Results in NaN when dividing by zero, which we set to zero by convention:
 data.long <- transform(data.long, LI=(ulLeft-ulRight)/(ulLeft+ulRight))
 head(data.long)
 summary(data.long)
-# ^^ notice NA's in LI summary !!!!!!!!!!!! change to zeros by convention !!!!!!!!!!!!!!!!
+# ^^ notice NA's in LI summary. Change to zeros by convention:
 data.long[sapply(data.long,is.na)] = 0
 summary(data.long)
 
 
+# RENAME AND REORDER FACTOR LEVELS FOR BETTER PLOTING:
 # change factor level "3mo" to "followup" for better naming
 levels(data.long$session)
 levels(data.long$session)[levels(data.long$session)=="3mo"]<-"followup"
 levels(data.long$session)
-# and also order session levels:
+# order session levels:
 data.long$session <- factor(data.long$session, levels=c("pre","post","followup"))
 levels(data.long$session)
+# reorder participants to reflect treatment then controls (new for poster)
+data.long$participant <- factor(data.long$participant, levels=c("INT2_s01","INT2_s03","INT2_s05","INT2_s06","INT2_s11","INT2_s12","INT2_s15","INT2_s04","INT2_s07","INT2_s08","INT2_s10","INT2_s14","INT2_s16","INT2_s19"))
+levels(data.long$participant)
+# improve ordering for display in faceted coord_flip'd axes
+data.long$participant<-factor(data.long$participant,levels=rev(levels(data.long$participant)))
+data.long$group<-factor(data.long$group, levels=rev(levels(data.long$group)))
+data.long$roi<-factor(data.long$roi, levels=c("CROSSONlateralFrontalROI","CROSSONPerisylvian","CROSSONmedialFrontal"))
 # more factor ordering help:
 # reorder()
 # refactor()
 
-# reorder participants to reflect treatment then controls (new for poster)
-data.long$participant <- factor(data.long$participant, levels=c("INT2_s01","INT2_s03","INT2_s05","INT2_s06","INT2_s11","INT2_s12","INT2_s15","INT2_s04","INT2_s07","INT2_s08","INT2_s10","INT2_s14","INT2_s16","INT2_s19"))
-levels(data.long$participant)
 
-
-# before plotting coord_flip'd LI plot, improve ordering for display in faceted flipped axes
-data.long$participant<-factor(data.long$participant,levels=rev(levels(data.long$participant)))
-data.long$group<-factor(data.long$group, levels=rev(levels(data.long$group)))
-data.long$roi<-factor(data.long$roi, levels=c("CROSSONlateralFrontalROI","CROSSONPerisylvian","CROSSONmedialFrontal"))
-
-# per BC: subset by region for plots and stats:
+# per BC: subset by region for stats:
 data.long.lateralFrontal<-subset(data.long,roi == "CROSSONlateralFrontalROI")
 data.long.perisylvian<-subset(data.long,roi == "CROSSONPerisylvian")
 data.long.medialFrontal<-subset(data.long,roi == "CROSSONmedialFrontal")
+
 
 # calcualte means and standard deviations:
 LI.mean.all<-mean(data.long$LI, na.rm=TRUE)
@@ -93,14 +91,28 @@ LI.sd.medialFrontal<-sd(data.long.medialFrontal$LI, na.rm=TRUE)
 
 # TBD: calculate max for LI axis by greater than max LI or mean+-SD
 
+
 #########################################################################################################################
+# GENERATE PLOTS
 # (For color options, display brewer pallettes: RColorBrewer::display.brewer.all)
 #
-# Now create LI bar plot with x and y axes flipped. Notice negative dodging to get pre/post/3mo order correct:
+#...start by sprucing up facet labels (modeled from http://wiki.stdout.org/rcookbook/Graphs/Facets%20(ggplot2) ) :
+labeller.poster <- function(var, value){
+	value <- as.character(value)
+	if (var=="roi") {
+		value[value=="CROSSONlateralFrontalROI"] 	<- "Lateral frontal"
+		value[value=="CROSSONPerisylvian"] 			<- "Posterior perisylvian"
+		value[value=="CROSSONmedialFrontal"] 		<- "Medial frontal"
+	}
+	if (var=="LIchange.period") {
+		value[value=="LIchange1.post"] 				<- "(post) - (pre)"
+		value[value=="LIchange2.followup"] 			<- "(3-month follow-up) - (pre)"
+	}
+	return(value)
+}
+
+# Create LI bar plot with x and y axes flipped. Notice negative dodging to get pre/post/3mo order correct:
 # ....+ scale_y_reverse also works to put negatives LIs on right, but ylim also allows control of range:
-#
-# First plot all three ROIs on one plot:
-# ...start with basic mapping:
 p.laterality<-ggplot(data.long, aes(participant, LI, fill=session)) +
 	# ...add the elements that should appear in the background (line for mean and shading for SD):
 	# (weirdly (b/c of axis flip?), min and max have to be given as -1*VARIABLE here:)
@@ -110,7 +122,7 @@ p.laterality<-ggplot(data.long, aes(participant, LI, fill=session)) +
 	# ...and now add the foreground barplot and everything else:
 	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
 	coord_flip() + 
-	facet_grid(roi ~ group, space="free") + 
+	facet_grid(roi ~ group, space="free", labeller=labeller.poster) + 
 	ylim(2,-2) + 
 	scale_fill_brewer(palette="YlOrRd") + 
 	theme_bw() + ylab("Laterality Index") + 
@@ -118,49 +130,6 @@ p.laterality<-ggplot(data.long, aes(participant, LI, fill=session)) +
 # ...display:
 #p.laterality
 
-# and now similar plots for individual ROI LIs:
-
-#p.laterality.lateralFrontal<-ggplot(data.long.lateralFrontal, aes(participant, LI, fill=session)) +
-#	geom_hline(yintercept=LI.mean.lateralFrontal, linetype="dashed") + 
-#	geom_rect(ymin=-LI.mean.lateralFrontal+LI.sd.lateralFrontal, ymax=-LI.mean.lateralFrontal-LI.sd.lateralFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-#	geom_hline(yintercept=0) +
-#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-#	coord_flip() + 
-#	facet_grid(roi ~ group, space="free") + 
-#	ylim(2,-2) + 
-#	scale_fill_brewer(palette="YlOrRd") + 
-#	theme_bw() + ylab("Laterality Index") + 
-#	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nLateral Frontal Region\n(mean LI=", round(LI.mean.lateralFrontal, digits=2), ", sd=" ,round(LI.sd.lateralFrontal, digits=2),")"))
-# ...display:
-#p.laterality.lateralFrontal
-
-#p.laterality.perisylvian<-ggplot(data.long.perisylvian, aes(participant, LI, fill=session)) +
-#	geom_hline(yintercept=LI.mean.perisylvian, linetype="dashed") + 
-#	geom_rect(ymin=-LI.mean.perisylvian+LI.sd.perisylvian, ymax=-LI.mean.perisylvian-LI.sd.perisylvian, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-#	geom_hline(yintercept=0) +
-#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-#	coord_flip() + 
-#	facet_grid(roi ~ group, space="free") + 
-#	ylim(2,-2) + 
-#	scale_fill_brewer(palette="YlOrRd") + 
-#	theme_bw() + ylab("Laterality Index") + 
-#	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nPerisylvian Region\n(mean LI=", round(LI.mean.perisylvian, digits=2), ", sd=" ,round(LI.sd.perisylvian, digits=2),")" ))
-# ...display:
-#p.laterality.perisylvian
-
-#p.laterality.medialFrontal<-ggplot(data.long.medialFrontal, aes(participant, LI, fill=session)) +
-#	geom_hline(yintercept=LI.mean.medialFrontal, linetype="dashed") + 
-#	geom_rect(ymin=-LI.mean.medialFrontal+LI.sd.medialFrontal, ymax=-LI.mean.medialFrontal-LI.sd.medialFrontal, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-#	geom_hline(yintercept=0) +
-#	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
-#	coord_flip() + 
-#	facet_grid(roi ~ group, space="free") + 
-#	ylim(2,-2) + 
-#	scale_fill_brewer(palette="YlOrRd") + 
-#	theme_bw() + ylab("Laterality Index") + 
-#	opts(title=paste("Pre, Post, and Follow-Up Laterality Indicies for \nMedial Frontal Region\n(mean LI =", round(LI.mean.medialFrontal, digits=2), ", sd=" ,round(LI.sd.medialFrontal, digits=2),")" ))
-# ...display:
-#p.laterality.medialFrontal
 
 # TBD: also eventually try as a dotchart with geom_point + geom_segment
 
@@ -187,8 +156,16 @@ data.long.change<-(join(data.long.change, data.cstat, by="participant"))
 # subset for plotting just post:
 data.long.change.post<-subset(data.long.change, LIchange.period == "LIchange1.post")
 # plot separately for naming and categories:
-p.corr.naming<-ggplot(data.long.change.post,aes(LIchange.signed, naming.cstat.Z.post)) + geom_point(shape=1,size=2) + geom_smooth(method=lm) + scale_x_reverse() + facet_grid(roi ~ group)
-p.corr.categories<-ggplot(data.long.change.post,aes(LIchange.signed, category.cstat.Z.post)) + geom_point(shape=1,size=2) + geom_smooth(method=lm) + scale_x_reverse() + facet_grid(roi ~ group)
+p.corr.naming<-ggplot(data.long.change.post,aes(LIchange.signed, naming.cstat.Z.post)) +
+	geom_point(shape=1,size=2) +
+	geom_smooth(method=lm) +
+	scale_x_reverse() +
+	facet_grid(roi ~ group, labeller=labeller.poster)
+p.corr.categories<-ggplot(data.long.change.post,aes(LIchange.signed, category.cstat.Z.post)) + 
+	geom_point(shape=1,size=2) + 
+	geom_smooth(method=lm) + 
+	scale_x_reverse() + 
+	facet_grid(roi ~ group, labeller=labeller.poster)
 
 
 # subset for plots and stats by region per BC:
@@ -328,16 +305,18 @@ cor.test(data.long.change.perisylvian.LIchange2.followup.control$LIchange.signed
 # First plot all three ROIs on one plot:
 # ...start with basic mapping:
 
-# new for poster (TBD: spruce up facet labels if possible)
-p.lateralityChange<-ggplot(data.long.change, aes(participant, LIchange.signed, fill=LIchange.period)) +
+# new plot for SFN poster:
+
+# and then plot:
+p.lateralityChange<-ggplot(data.long.change, aes(participant, LIchange.signed, fill=group)) +
 	geom_bar(stat="identity") + 
 	coord_flip() + 
-	facet_grid(roi ~ LIchange.period, space="free") + 
+	facet_grid(roi ~ LIchange.period, space="free", labeller=labeller.poster) + 
 	ylim(2,-2) + 
-	theme_bw() + ylab("Signed Change in Laterality Index") + 
+	ylab("Signed Change in Laterality Index") + 
 	opts(title=paste("Change in Laterality Index for Three Anatomical Regions:\nPre-to-Post and Pre-to-3-Month-Follow-Up"))
 # ...display:
-#p.lateralityChange
+p.lateralityChange
 
 
 # old, pre-poster lateralityChange plot for all regions:
