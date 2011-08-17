@@ -14,7 +14,7 @@ library(ggplot2)
 library(plyr)
 library(reshape2)
 
-# import csv and double-check it:
+# import supra-threshold volumes as csv and double-check it:
 # !!!!! broken right now: data.long<-(read.csv("https://docs.google.com/spreadsheet/pub?key=0AtQwiwfBQVsYdEJ1aEhvdGNIMHRxOVhuWHBQTVppWWc&single=true&gid=0&range=A1%3AC20&output=csv&ndplr=1"))
 data.long.url<-"https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=0AtQwiwfBQVsYdFZOTnNHMGM1c09WRWc4aXUzYVRTWHc&single=true&gid=0&output=csv&ndplr=1"
 download.file(data.long.url, "/tmp/r01_li_long.csv", method = "wget")
@@ -23,7 +23,7 @@ head(data.long)
 str(data.long)
 summary(data.long)
 
-# import csv and double-check it:
+# import cstats as csv and double-check it:
 data.cstat.url<-"https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=0AtQwiwfBQVsYdEdJWC1fNkJUaGRjb1pHOV9qWmpWdFE&single=true&gid=0&output=csv&ndplr=1"
 download.file(data.cstat.url, "/tmp/r01_cstat_z.csv", method = "wget")
 data.cstat<-(read.csv("/tmp/r01_cstat_z.csv"))
@@ -31,7 +31,8 @@ head(data.cstat)
 str(data.cstat)
 summary(data.cstat)
 
-# calculate LI and spot-check. Results in NaN when dividing by zero, which we set to zero by convention:
+# calculate LI and spot-check:
+# (Results in NaN when dividing by zero, which we set to zero by convention)
 data.long <- transform(data.long, LI=(ulLeft-ulRight)/(ulLeft+ulRight))
 head(data.long)
 summary(data.long)
@@ -42,16 +43,47 @@ summary(data.long)
 
 # RENAME AND REORDER FACTOR LEVELS FOR BETTER PLOTING:
 # change factor level "3mo" to "followup" for better naming
-levels(data.long$session)
 levels(data.long$session)[levels(data.long$session)=="3mo"]<-"followup"
 levels(data.long$session)
 # order session levels:
 data.long$session <- factor(data.long$session, levels=c("pre","post","followup"))
 levels(data.long$session)
-# reorder participants to reflect treatment then controls (new for poster)
+# reorder participants to reflect treatment then controls (new for poster):
 data.long$participant <- factor(data.long$participant, levels=c("INT2_s01","INT2_s03","INT2_s05","INT2_s06","INT2_s11","INT2_s12","INT2_s15","INT2_s04","INT2_s07","INT2_s08","INT2_s10","INT2_s14","INT2_s16","INT2_s19"))
 levels(data.long$participant)
-# improve ordering for display in faceted coord_flip'd axes
+# get rid of "INT2_" at front of data.long participant IDs:
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s01"]<-"s01"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s03"]<-"s03"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s05"]<-"s05"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s06"]<-"s06"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s11"]<-"s11"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s12"]<-"s12"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s15"]<-"s15"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s04"]<-"s04"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s07"]<-"s07"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s08"]<-"s08"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s10"]<-"s10"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s14"]<-"s14"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s16"]<-"s16"
+levels(data.long$participant)[levels(data.long$participant)=="INT2_s19"]<-"s19"
+# get rid of "INT2_" at front of data.cstat participant IDs:
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s01"]<-"s01"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s03"]<-"s03"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s05"]<-"s05"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s06"]<-"s06"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s11"]<-"s11"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s12"]<-"s12"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s15"]<-"s15"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s04"]<-"s04"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s07"]<-"s07"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s08"]<-"s08"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s10"]<-"s10"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s14"]<-"s14"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s16"]<-"s16"
+levels(data.cstat$participant)[levels(data.cstat$participant)=="INT2_s19"]<-"s19"
+
+
+# improve ordering for display in faceted coord_flip'd axes:
 data.long$participant<-factor(data.long$participant,levels=rev(levels(data.long$participant)))
 data.long$group<-factor(data.long$group, levels=rev(levels(data.long$group)))
 data.long$roi<-factor(data.long$roi, levels=c("CROSSONlateralFrontalROI","CROSSONPerisylvian","CROSSONmedialFrontal"))
@@ -108,6 +140,22 @@ labeller.poster <- function(var, value){
 		value[value=="LIchange1.post"] 				<- "(post) - (pre)"
 		value[value=="LIchange2.followup"] 			<- "(3-month follow-up) - (pre)"
 	}
+	if (var=="participant") {
+		value[value=="INT2_s01"] 				<- "s01"
+		value[value=="INT2_s03"] 				<- "s03"
+		value[value=="INT2_s05"] 				<- "s05"
+		value[value=="INT2_s06"] 				<- "s06"
+		value[value=="INT2_s11"] 				<- "s11"
+		value[value=="INT2_s12"] 				<- "s12"
+		value[value=="INT2_s15"] 				<- "s15"
+		value[value=="INT2_s04"] 				<- "s04"
+		value[value=="INT2_s07"] 				<- "s07"
+		value[value=="INT2_s08"] 				<- "s08"
+		value[value=="INT2_s10"] 				<- "s10"
+		value[value=="INT2_s14"] 				<- "s14"
+		value[value=="INT2_s16"] 				<- "s16"
+		value[value=="INT2_s19"] 				<- "s19"
+	}
 	return(value)
 }
 
@@ -156,16 +204,23 @@ data.long.change<-(join(data.long.change, data.cstat, by="participant"))
 # subset for plotting just post:
 data.long.change.post<-subset(data.long.change, LIchange.period == "LIchange1.post")
 # plot separately for naming and categories:
-p.corr.naming<-ggplot(data.long.change.post,aes(LIchange.signed, naming.cstat.Z.post)) +
-	geom_point(shape=1,size=2) +
-	geom_smooth(method=lm) +
+p.corr.naming     <- ggplot(data.long.change.post,aes(LIchange.signed, naming.cstat.Z.post)) + 
+	geom_point(shape=1,size=2) + 
+	geom_smooth(method=lm) + 
 	scale_x_reverse() +
-	facet_grid(roi ~ group, labeller=labeller.poster)
-p.corr.categories<-ggplot(data.long.change.post,aes(LIchange.signed, category.cstat.Z.post)) + 
+	facet_grid(roi ~ group, labeller=labeller.poster) +
+	ylab("Naming c-statistic") +
+	xlab("Change in laterality index") +
+	opts(title=paste("Correlation between treatment change and laterality index change"))
+p.corr.categories <- ggplot(data.long.change.post,aes(LIchange.signed, category.cstat.Z.post)) + 
 	geom_point(shape=1,size=2) + 
 	geom_smooth(method=lm) + 
 	scale_x_reverse() + 
-	facet_grid(roi ~ group, labeller=labeller.poster)
+	facet_grid(roi ~ group, labeller=labeller.poster) +
+	ylab("Category c-statistic") +
+	xlab("Change in laterality index") +
+	opts(title=paste("Correlation between treatment change and laterality index change"))
+
 
 
 # subset for plots and stats by region per BC:
@@ -313,10 +368,11 @@ p.lateralityChange<-ggplot(data.long.change, aes(participant, LIchange.signed, f
 	coord_flip() + 
 	facet_grid(roi ~ LIchange.period, space="free", labeller=labeller.poster) + 
 	ylim(2,-2) + 
-	ylab("Signed Change in Laterality Index") + 
-	opts(title=paste("Change in Laterality Index for Three Anatomical Regions:\nPre-to-Post and Pre-to-3-Month-Follow-Up"))
+	xlab("Participats") +
+	ylab("Change in laterality index") + 
+	opts(title=paste("Change in Laterality Index"))
 # ...display:
-p.lateralityChange
+#p.lateralityChange
 
 
 # old, pre-poster lateralityChange plot for all regions:
