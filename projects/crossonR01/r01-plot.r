@@ -46,6 +46,11 @@ levels(data.long$session)
 # reorder()
 # refactor()
 
+# reorder participants to reflect treatment then controls (new for poster)
+data.long$participant <- factor(data.long$participant, levels=c("INT2_s01","INT2_s03","INT2_s05","INT2_s06","INT2_s11","INT2_s12","INT2_s15","INT2_s04","INT2_s07","INT2_s08","INT2_s10","INT2_s14","INT2_s16","INT2_s19"))
+levels(data.long$participant)
+
+
 # before plotting coord_flip'd LI plot, improve ordering for display in faceted flipped axes
 data.long$participant<-factor(data.long$participant,levels=rev(levels(data.long$participant)))
 data.long$group<-factor(data.long$group, levels=rev(levels(data.long$group)))
@@ -176,8 +181,8 @@ data.long.change<-(join(data.long.change, data.cstat, by="participant"))
 # subset for plotting just post:
 data.long.change.post<-subset(data.long.change, LIchange.period == "LIchange1.post")
 # plot separately for naming and categories:
-p.corr.naming<-ggplot(data.long.change.post,aes(LIchange.signed, naming.cstat.Z.post)) + geom_point() + geom_smooth(method=lm) + scale_x_reverse() + facet_grid(group ~ roi)
-p.corr.categories<-ggplot(data.long.change.post,aes(LIchange.signed, category.cstat.Z.post)) + geom_point() + geom_smooth(method=lm) + scale_x_reverse() + facet_grid(group ~ roi)
+p.corr.naming<-ggplot(data.long.change.post,aes(LIchange.signed, naming.cstat.Z.post)) + geom_point(shape=1,size=2) + geom_smooth(method=lm) + scale_x_reverse() + facet_grid(roi ~ group)
+p.corr.categories<-ggplot(data.long.change.post,aes(LIchange.signed, category.cstat.Z.post)) + geom_point(shape=1,size=2) + geom_smooth(method=lm) + scale_x_reverse() + facet_grid(roi ~ group)
 
 
 # subset for plots and stats by region per BC:
@@ -316,22 +321,36 @@ cor.test(data.long.change.perisylvian.LIchange2.followup.control$LIchange.signed
 #
 # First plot all three ROIs on one plot:
 # ...start with basic mapping:
+
+# new for poster (TBD: spruce up facet labels if possible)
 p.lateralityChange<-ggplot(data.long.change, aes(participant, LIchange.signed, fill=LIchange.period)) +
-	# ...add the elements that should appear in the background (line for mean and shading for SD):
-	# (weirdly (b/c of axis flip?), min and max have to be given as -1*VARIABLE here:)
-	geom_hline(yintercept=LIchange.mean.all, linetype="dashed") + 
-	geom_rect(ymin=-LIchange.mean.all+LIchange.sd.all, ymax=-LIchange.mean.all-LIchange.sd.all, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
-	geom_hline(yintercept=0) +
-	# ...and now add the foreground barplot and everything else:
-	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
+	geom_bar(stat="identity") + 
 	coord_flip() + 
-	facet_grid(roi ~ group, space="free") + 
+	facet_grid(roi ~ LIchange.period, space="free") + 
 	ylim(2,-2) + 
-	scale_fill_brewer(palette="Blues") + 
 	theme_bw() + ylab("Signed Change in Laterality Index") + 
-	opts(title=paste("Change in Laterality Index for Three Anatomical Regions:\nPre-to-Post and Pre-to-Follow-Up \n(grand mean LIchange=", round(LIchange.mean.all, digits=2), ", sd=" ,round(LIchange.sd.all, digits=2),")" ))
+	opts(title=paste("Change in Laterality Index for Three Anatomical Regions:\nPre-to-Post and Pre-to-3-Month-Follow-Up"))
 # ...display
 p.laterality
+
+
+# old, pre-poster lateralityChange plot for all regions:
+# p.lateralityChange<-ggplot(data.long.change, aes(participant, LIchange.signed, fill=LIchange.period)) +
+# 	# ...add the elements that should appear in the background (line for mean and shading for SD):
+# 	# (weirdly (b/c of axis flip?), min and max have to be given as -1*VARIABLE here:)
+# 	geom_hline(yintercept=LIchange.mean.all, linetype="dashed") + 
+# 	geom_rect(ymin=-LIchange.mean.all+LIchange.sd.all, ymax=-LIchange.mean.all-LIchange.sd.all, xmin=0, xmax=Inf, fill="purple", alpha=0.02) +
+# 	geom_hline(yintercept=0) +
+# 	# ...and now add the foreground barplot and everything else:
+# 	geom_bar(stat="identity", position=position_dodge(width=-.75)) + 
+# 	coord_flip() + 
+# 	facet_grid(roi ~ group, space="free") + 
+# 	ylim(2,-2) + 
+# 	scale_fill_brewer(palette="Blues") + 
+# 	theme_bw() + ylab("Signed Change in Laterality Index") + 
+# 	opts(title=paste("Change in Laterality Index for Three Anatomical Regions:\nPre-to-Post and Pre-to-Follow-Up \n(grand mean LIchange=", round(LIchange.mean.all, digits=2), ", sd=" ,round(LIchange.sd.all, digits=2),")" ))
+# # ...display
+# p.laterality
 
 # and now similar plots for individual ROI LIchanges:
 
@@ -396,17 +415,19 @@ p.lateralityChange.medialFrontal<-ggplot(data.long.change.medialFrontal, aes(par
 #########################################################################################################################
 # print plots to multi-page PDF on letter paper in portrait orientation:
 pdf("/tmp/r01-plots.pdf", height=9, paper="letter")
+# poster figures first:
+print(p.lateralityChange)
+print(p.corr.naming)
+print(p.corr.categories)
+# followed by everything else:
 print(p.laterality)
 print(p.laterality.lateralFrontal)
 print(p.laterality.perisylvian)
 print(p.laterality.medialFrontal)
-print(p.lateralityChange)
 print(p.lateralityChange.lateralFrontal)
 print(p.lateralityChange.perisylvian)
 print(p.lateralityChange.medialFrontal)
-print(p.corr.naming)
-print(p.corr.categories)
 dev.off()
 
 # view pdf in evince or acroread:
-system("evince /tmp/r01-plots.pdf &")
+system("acroread /tmp/r01-plots.pdf &")
