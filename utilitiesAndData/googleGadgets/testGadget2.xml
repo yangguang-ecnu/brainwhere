@@ -7,7 +7,7 @@
           height="800" width="600" author="Google" author_email="stowler+googleGadget@gmail.com">
     <Require feature="dynamic-height"/>
   </ModulePrefs>
-  <UserPref name="iframeURL" display_name="URL to content" required="true"/>
+  <UserPref name="iframeURL" display_name="URL to content" required="true" datatype="string"/>
   <UserPref name="scroll" display_name="Display scrollbar" default_value="auto" datatype="enum">
     <EnumValue value="auto" display_value="Automatic"/>
     <EnumValue value="no" display_value="No"/>
