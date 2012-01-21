@@ -4,8 +4,7 @@
           description="Include another web page in your Google Site"
           thumbnail="http://www.gstatic.com/sites-gadgets/common/images/sites-icon-gadget-thumb.png"
           screenshot="http://www.gstatic.com/sites-gadgets/common/images/sites-icon-gadget-ss.png"
-          author_email="stowler+googleGadget@gmail.com"
-          height="800" width="600" author="Google">
+          height="800" width="600" author="Google" author_email="stowler+googleGadget@gmail.com">
     <Require feature="dynamic-height"/>
   </ModulePrefs>
   <UserPref name="iframeURL" display_name="URL to content" required="true"/>
