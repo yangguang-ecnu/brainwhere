@@ -7,7 +7,7 @@
           height="800" width="600" author="Google" author_email="stowler+googleGadget@gmail.com">
     <Require feature="dynamic-height"/>
   </ModulePrefs>
-  <UserPref name="iframeURL" display_name="URL to content" required="true" default_value="https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=0AtQwiwfBQVsYdEdORWlNeTlWaS1adEJJcUozcTdRY2c&single=true&gid=1&range=A1%3AG29&output=html" datatype="string"/>
+  <UserPref name="iframeURL" display_name="URL to content" required="true" datatype="string"/>
   <UserPref name="scroll" display_name="Display scrollbar" default_value="auto" datatype="enum">
     <EnumValue value="auto" display_value="Automatic"/>
     <EnumValue value="no" display_value="No"/>
