@@ -668,11 +668,11 @@ if [ $generateClusterReport -eq 1 ]; then
 			-prefix ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_maskBW.nii.gz \
 			${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_max.buck_irfcorr5.thresh10.gammaThresh8.warped1mmMNI152nii.gz.nii.gz
 
-			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer2Only.txt
+			rm -f ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer4Only.txt
 			${bwDir}/clusterReporter.sh \
                         -m ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_maskBW.nii.gz \
-                        -o ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer2Only.txt \
-                        -a 1mmCrosson3roiVer2Only
+                        -o ${outDir}/${blind}/${session}/afnifiles/${blind}_${session}_clust.12thresh.50ul_reportBW_1mmCrosson3roiVer4Only.txt \
+                        -a 1mmCrosson3roiVer4Only
 
 			echo ""
 			echo ""

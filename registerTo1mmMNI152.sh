@@ -370,10 +370,11 @@ if [ -s "`echo ${epi}`" ]; then
 
 	# now use this 3D average EPI in the calculation of the transformation
 	# instead of the original EPI:
+	# TBD: put back in refweight as part of a conditional version of that that gets executed if lesion is available
+	#	-refweight ${tempDir}/${blind}_lesionInverted \
 	flirt \
 	-ref ${tempDir}/${blind}_t1_brain \
 	-in ${tempDir}/${blind}_epi_averaged_brain \
-	-refweight ${tempDir}/${blind}_lesionInverted \
 	-dof 6 \
 	-cost corratio \
 	-omat ${tempDir}/${blind}_func2struct.mat
